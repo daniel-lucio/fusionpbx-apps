@@ -311,11 +311,11 @@
 		elseif (outbound_caller_id_number ~= nil) then
 			--get the outbound_caller_id_number using the domain_uuid and the extension number
 				if (domain_uuid ~= nil) then
-					sql = "SELECT carrier FROM  ";
-					sql = sql .. " v_sms_destinations ";
-					sql = sql .. "WHERE destination = :from and ";
+					sql = "SELECT extension_uuid, carrier FROM  ";
+					sql = sql .. " v_sms_destinations, v_extensions ";
+					sql = sql .. "WHERE outbound_caller_id_number = destination AND extension = :from and ";
 					sql = sql .. "v_sms_destinations.domain_uuid = :domain_uuid and ";
-					sql = sql .. "enabled = 'true'";
+					sql = sql .. "v_sms_destinations.enabled = 'true'";
 					local params = {from = from, domain_uuid = domain_uuid};
 
 					if (debug["sql"]) then
@@ -323,13 +323,18 @@
 					end
 					status = dbh:query(sql, params, function(rows)
 						carrier = rows["carrier"];
+						extension_uuid = rows["extension_uuid"];
 					end);
 				end
 		end
 		
 		--get settings 
 		require "resources.functions.settings";
-		settings = settings(domain_uuid);
+		if (type(settings) ~= 'table') then
+			settings = settings(domain_uuid);	-- TODO: find a fix attempt to call global 'settings' (a table value)
+		else
+			return;
+		end
 		if (settings['sms'] ~= nil) then
 			if (settings['sms'][carrier..'_access_key'] ~= nil) then
 				if (settings['sms'][carrier..'_access_key']['text'] ~= nil) then
@@ -423,6 +428,14 @@
 					outbound_caller_id_number = "1" .. outbound_caller_id_number;
 				end
 				cmd ="curl -X POST \"" .. api_url .."\" -H \"Content-Type: application/json\"  -H \"x-profile-secret: " .. secret_key .. "\" -d '{\"from\": \"+" .. outbound_caller_id_number .. "\", \"to\": \"+" .. to .. "\", \"body\": \"" .. body .. "\", \"delivery_status_webhook_url\": \"" .. delivery_status_webhook_url .. "\"}'";
+			elseif (carrier == "bulkvs") then
+				if to:len() < 11 then
+					to = "1" .. to;
+				end
+				if outbound_caller_id_number:len() < 11 then
+					outbound_caller_id_number = "1" .. outbound_caller_id_number;
+				end
+				cmd ="curl -X POST \"" .. api_url .."\" -H  \"Accept: application/json\" -H \"Content-Type: application/json\"  -u '" .. username .. ":" .. secret_key .. "' -d '{\"From\": \"" .. outbound_caller_id_number .. "\", \"To\": [\"" .. to .. "\"], \"Message\": \"" .. body .. "\"}'";
 			end
 			if (debug["info"]) then
 				freeswitch.consoleLog("notice", "[sms] CMD: " .. cmd .. "\n");

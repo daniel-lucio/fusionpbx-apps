@@ -97,7 +97,8 @@
 		body = argv[5];
 		mailsent = argv[6];
 		domain_name = string.match(to,'%@+(.+)');
-		extension = string.match(to,'%d+');
+--		extension = string.match(to,'%d+');
+		extension = string.match(to,'^[%w.]+');
 		if (body ~= nil) then
 			body = urldecode(body);
 		end

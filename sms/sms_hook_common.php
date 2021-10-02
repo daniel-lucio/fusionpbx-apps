@@ -100,7 +100,7 @@ function route_and_send_sms($from, $to, $body, $media = "") {
 				if (count($result) > 0) {
 					foreach ($result as &$row) {
 						$domain_name = $row["domain_name"];
-						preg_match('/(\d{2,7})/',$row["chatplan_detail_data"],$match);
+						preg_match('/([\w\.\-]+)/',$row["chatplan_detail_data"],$match);
 						$domain_uuid = $row["domain_uuid"];
 						break; //limit to 1 row
 					}

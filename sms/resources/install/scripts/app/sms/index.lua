@@ -24,6 +24,10 @@
 --	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 --	POSSIBILITY OF SUCH DAMAGE.
 
+--cluster enabled
+	local USE_FS_PATH = (xml_handler and xml_handler["fs_path"]) or (sms and sms["fs_path"]);
+	local SMS_BROADCAST = (sms and sms["broadcast"]);
+
 --connect to the database
 	local Database = require "resources.functions.database";
 	dbh = Database.new('system');
@@ -37,7 +41,7 @@
 
 --include json library
 	local json
-	if (debug["sql"]) then
+	if (debug["sql"] or USE_FS_PATH) then
 		json = require "resources.functions.lunajson"
 	end
 
@@ -119,98 +123,157 @@
 				
 		end
 
-		--See if target ext is registered.
-		extension_status = "sofia_contact " .. to;
-		reply = api:executeString(extension_status);
-		--freeswitch.consoleLog("NOTICE", "[sms] Ext status: "..reply .. "\n");
-		if (reply == "error/user_not_registered") then
-			freeswitch.consoleLog("NOTICE", "[sms] Target extension "..to.." is not registered, not sending via SIMPLE.\n");
-		else
-			local event = freeswitch.Event("CUSTOM", "SMS::SEND_MESSAGE");
-			event:addHeader("proto", "sip");
-			event:addHeader("dest_proto", "sip");
-			event:addHeader("from", "sip:" .. from);
-			event:addHeader("from_user", from);
-			event:addHeader("from_host", domain_name);
-			event:addHeader("from_full", "sip:" .. from .."@".. domain_name);
-			event:addHeader("sip_profile","internal");
-			event:addHeader("to", to);
-			event:addHeader("to_user", extension);
-			event:addHeader("to_host", domain_name);
-			event:addHeader("subject", "SIMPLE MESSAGE");
-			event:addHeader("type", "text/plain");
-			event:addHeader("hint", "the hint");
-			event:addHeader("replying", "true");
-			event:addHeader("DP_MATCH", to);
-			event:addBody(body);
-
-			if (debug["info"]) then
-				freeswitch.consoleLog("info", event:serialize() .. "\n");
-			end
-			event:fire();
-		end
-		to = extension;
-
-		if (not mailsent == 1) then
-			--Send inbound SMS via email delivery 
-			-- This is legacy code retained for backwards compatibility.  See /var/www/fusionpbx/app/sms/sms_email.php for current.
-			if (domain_uuid == nil) then
-				--get the domain_uuid using the domain name required for multi-tenant
-					if (domain_name ~= nil) then
-						sql = "SELECT domain_uuid FROM v_domains ";
-						sql = sql .. "WHERE domain_name = :domain_name and domain_enabled = 'true' ";
-						local params = {domain_name = domain_name}
-
-						if (debug["sql"]) then
-							freeswitch.consoleLog("notice", "[sms] SQL: "..sql.."; params:" .. json.encode(params) .. "\n");
-						end
-						status = dbh:query(sql, params, function(rows)
-							domain_uuid = rows["domain_uuid"];
-						end);
-					end
-			end
-			if (domain_uuid == nil) then
-				freeswitch.consoleLog("notice", "[sms] domain_uuid is nill, cannot send sms to email.");
-			else
-				sql = "SELECT v_contact_emails.email_address ";
-				sql = sql .. "from v_extensions, v_extension_users, v_users, v_contact_emails ";
-				sql = sql .. "where v_extensions.extension = :toext and v_extensions.domain_uuid = :domain_uuid and v_extensions.extension_uuid = v_extension_users.extension_uuid ";
-				sql = sql .. "and v_extension_users.user_uuid = v_users.user_uuid and v_users.contact_uuid = v_contact_emails.contact_uuid ";
-				sql = sql .. "and (v_contact_emails.email_label = 'sms' or v_contact_emails.email_label = 'SMS')";
-				local params = {toext = extension, domain_uuid = domain_uuid}
-
+		is_local_user = true;
+		if (USE_FS_PATH) then
+			is_local_user = false;
+			dbh_switch = Database.new('switch');
+			if (SMS_BROADCAST) then
+				sql = "SELECT DISTINCT hostname FROM registrations";
+				params = {};
 				if (debug["sql"]) then
-					freeswitch.consoleLog("notice", "[sms] SQL: "..sql.."; params:" .. json.encode(params) .. "\n");
+					freeswitch.consoleLog("notice", "[xml_handler] SQL: " .. sql .. "\n");
 				end
-				status = dbh:query(sql, params, function(rows)
-					send_to_email_address = rows["email_address"];
-				end);
+			else
+				require "resources.functions.trim";
+				local_hostname = trim(api:execute("switchname", ""));
+				freeswitch.consoleLog("notice", "[sms] local_hostname is " .. local_hostname .. "\n");
 
-				send_from_email_address = 'noreply@example.com'  -- this gets overridden if using v_mailto.php
-
-				if (send_to_email_address ~= nill and send_from_email_address ~= nill) then
-					subject = 'Text Message from: ' .. from;
-					emailbody = 'To: ' .. to .. '<br>Msg:' .. body;
-					if (debug["info"]) then
-						freeswitch.consoleLog("info", emailbody);
-					end
-					--luarun email.lua send_to_email_address send_from_email_address '' subject emailbody;
-					--replace the &#39 with a single quote
-						emailbody = emailbody:gsub("&#39;", "'");
-
-					--replace the &#34 with double quote
-						emailbody = emailbody:gsub("&#34;", [["]]);
-
-					--send the email
-						freeswitch.email(send_to_email_address,
-							send_from_email_address,
-							"To: "..send_to_email_address.."\nFrom: "..send_from_email_address.."\nX-Headers: \nSubject: "..subject,
-							emailbody
-							);
+				sql = "SELECT hostname FROM registrations WHERE reg_user = :reg_user AND realm = :domain_name ";
+				params = {reg_user=extension, domain_name=domain_name};
+				if (database["type"] == "mysql") then
+					params.now = os.time();
+					sql = sql .. "AND expires > :now ";
+				else
+					sql = sql .. "AND to_timestamp(expires) > NOW()";
 				end
-			end 
+				if (debug["sql"]) then
+					freeswitch.consoleLog("notice", "[xml_handler] SQL: " .. sql .. "; params:" .. json.encode(params) .. "\n");
+				end
+			end
+
+			database_hostnames = {};
+			dbh_switch:query(sql, params, function(row)
+				database_hostname = row["hostname"];
+				if  database_hostname ~= nil then
+					freeswitch.consoleLog("notice", "[sms] database_hostname is " .. database_hostname .. "\n");
+					table.insert(database_hostnames, database_hostname)
+				end
+			end);
+
+			freeswitch.consoleLog("notice", '[sms] #database_hostnames = '..#database_hostnames);
+			if (#database_hostnames == 0) then
+				USE_FS_PATH = false;
+			elseif (#database_hostnames == 1) and (local_hostname == database_hostnames[0]) then		-- TODO: review this logic
+				freeswitch.consoleLog("notice", "[sms] local_host and database_host are the same\n");
+				is_local_user = true;
+			end
+			dbh_switch:release();
 		end
+		
+		if (is_local_user) then
+			--See if target ext is registered.
+			extension_status = "sofia_contact " .. to;
+			reply = api:executeString(extension_status);
+			--freeswitch.consoleLog("NOTICE", "[sms] Ext status: "..reply .. "\n");
+			if (reply == "error/user_not_registered") then
+				freeswitch.consoleLog("NOTICE", "[sms] Target extension "..to.." is not registered, not sending via SIMPLE.\n");
+			else
+				local event = freeswitch.Event("CUSTOM", "SMS::SEND_MESSAGE");
+				event:addHeader("proto", "sip");
+				event:addHeader("dest_proto", "sip");
+				event:addHeader("from", "sip:" .. from);
+				event:addHeader("from_user", from);
+				event:addHeader("from_host", domain_name);
+				event:addHeader("from_full", "sip:" .. from .."@".. domain_name);
+				event:addHeader("sip_profile","internal");
+				event:addHeader("to", to);
+				event:addHeader("to_user", extension);
+				event:addHeader("to_host", domain_name);
+				event:addHeader("subject", "SIMPLE MESSAGE");
+				event:addHeader("type", "text/plain");
+				event:addHeader("hint", "the hint");
+				event:addHeader("replying", "true");
+				event:addHeader("DP_MATCH", to);
+				event:addBody(body);
 
+				if (debug["info"]) then
+					freeswitch.consoleLog("info", event:serialize() .. "\n");
+				end
+				event:fire();
+			end
+			to = extension;
+
+			if (not mailsent == 1) then
+				--Send inbound SMS via email delivery 
+				-- This is legacy code retained for backwards compatibility.  See /var/www/fusionpbx/app/sms/sms_email.php for current.
+				if (domain_uuid == nil) then
+					--get the domain_uuid using the domain name required for multi-tenant
+						if (domain_name ~= nil) then
+							sql = "SELECT domain_uuid FROM v_domains ";
+							sql = sql .. "WHERE domain_name = :domain_name and domain_enabled = 'true' ";
+							local params = {domain_name = domain_name}
+
+							if (debug["sql"]) then
+								freeswitch.consoleLog("notice", "[sms] SQL: "..sql.."; params:" .. json.encode(params) .. "\n");
+							end
+							status = dbh:query(sql, params, function(rows)
+								domain_uuid = rows["domain_uuid"];
+							end);
+						end
+				end
+				if (domain_uuid == nil) then
+					freeswitch.consoleLog("notice", "[sms] domain_uuid is nill, cannot send sms to email.");
+				else
+					sql = "SELECT v_contact_emails.email_address ";
+					sql = sql .. "from v_extensions, v_extension_users, v_users, v_contact_emails ";
+					sql = sql .. "where v_extensions.extension = :toext and v_extensions.domain_uuid = :domain_uuid and v_extensions.extension_uuid = v_extension_users.extension_uuid ";
+					sql = sql .. "and v_extension_users.user_uuid = v_users.user_uuid and v_users.contact_uuid = v_contact_emails.contact_uuid ";
+					sql = sql .. "and (v_contact_emails.email_label = 'sms' or v_contact_emails.email_label = 'SMS')";
+					local params = {toext = extension, domain_uuid = domain_uuid}
+
+					if (debug["sql"]) then
+						freeswitch.consoleLog("notice", "[sms] SQL: "..sql.."; params:" .. json.encode(params) .. "\n");
+					end
+					status = dbh:query(sql, params, function(rows)
+						send_to_email_address = rows["email_address"];
+					end);
+
+					send_from_email_address = 'noreply@example.com'  -- this gets overridden if using v_mailto.php
+
+					if (send_to_email_address ~= nill and send_from_email_address ~= nill) then
+						subject = 'Text Message from: ' .. from;
+						emailbody = 'To: ' .. to .. '<br>Msg:' .. body;
+						if (debug["info"]) then
+							freeswitch.consoleLog("info", emailbody);
+						end
+						--luarun email.lua send_to_email_address send_from_email_address '' subject emailbody;
+						--replace the &#39 with a single quote
+							emailbody = emailbody:gsub("&#39;", "'");
+
+						--replace the &#34 with double quote
+							emailbody = emailbody:gsub("&#34;", [["]]);
+
+						--send the email
+							freeswitch.email(send_to_email_address,
+								send_from_email_address,
+								"To: "..send_to_email_address.."\nFrom: "..send_from_email_address.."\nX-Headers: \nSubject: "..subject,
+								emailbody
+								);
+					end
+				end 
+			end
+		else
+			--forward to the right server using HTTP
+			for i,v in ipairs(database_hostnames) do
+				local url = http_protocol.."://"..v..project_path..'/app/sms/hook/sms_hook_generic.php';
+				local payload = {from=from, to=to, body=body};
+				local json_payload = json.encode(payload);
+				local sms_cmd = "curl -H \"Content-Type: application/json\" -X POST -d '"..json_payload.."' "..url;
+				freeswitch.consoleLog("notice", "[sms] url: "..url);
+				freeswitch.consoleLog("notice", "[sms] json_payload: "..json_payload);
+				freeswitch.consoleLog("notice", "[sms] sms_cmd: "..sms_cmd);
+			end
+		end
 	elseif direction == "outbound" then
 		if (argv[3] ~= nil) then
 			to_user = argv[3];

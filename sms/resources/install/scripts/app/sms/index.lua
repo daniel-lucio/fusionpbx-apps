@@ -153,7 +153,7 @@
 
 			database_hostnames = {};
 			dbh_switch:query(sql, params, function(row)
-				database_hostname = row["hostname"];
+				database_hostname = row["hostname"];	-- Last hostname
 				if  database_hostname ~= nil then
 					freeswitch.consoleLog("notice", "[sms] database_hostname is " .. database_hostname .. "\n");
 					table.insert(database_hostnames, database_hostname)
@@ -163,7 +163,7 @@
 			freeswitch.consoleLog("notice", '[sms] #database_hostnames = '..#database_hostnames);
 			if (#database_hostnames == 0) then
 				USE_FS_PATH = false;
-			elseif (#database_hostnames == 1) and (local_hostname == database_hostnames[0]) then		-- TODO: review this logic
+			elseif (#database_hostnames == 1) and (local_hostname == database_hostname) then		-- TODO: review this logic
 				freeswitch.consoleLog("notice", "[sms] local_host and database_host are the same\n");
 				is_local_user = true;
 			end
@@ -265,13 +265,20 @@
 		else
 			--forward to the right server using HTTP
 			for i,v in ipairs(database_hostnames) do
-				local url = http_protocol.."://"..v..project_path..'/app/sms/hook/sms_hook_generic.php';
+--				local url = http_protocol.."://"..v..project_path..'/app/sms/hook/sms_hook_internal.php';
+				local url = "https://"..v..project_path..'/app/sms/hook/sms_hook_internal.php';
 				local payload = {from=from, to=to, body=body};
 				local json_payload = json.encode(payload);
-				local sms_cmd = "curl -H \"Content-Type: application/json\" -X POST -d '"..json_payload.."' "..url;
+				local sms_cmd = "curl -k -H \"Content-Type: application/json\" -X POST -d '"..json_payload.."' "..url;
 				freeswitch.consoleLog("notice", "[sms] url: "..url);
 				freeswitch.consoleLog("notice", "[sms] json_payload: "..json_payload);
 				freeswitch.consoleLog("notice", "[sms] sms_cmd: "..sms_cmd);
+				local handle = io.popen(sms_cmd)
+				local result = handle:read("*a")
+				handle:close()
+				if (debug["info"]) then
+					freeswitch.consoleLog("notice", "[sms] CURL Returns: " .. result .. "\n");
+				end
 			end
 		end
 	elseif direction == "outbound" then

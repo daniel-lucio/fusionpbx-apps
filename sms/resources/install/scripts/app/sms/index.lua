@@ -25,8 +25,21 @@
 --	POSSIBILITY OF SUCH DAMAGE.
 
 --cluster enabled
-	local USE_FS_PATH = (sms and sms["fs_path"]);
-	local SMS_BROADCAST = (sms and sms["broadcast"]);
+	if sms == nil then
+                sms = {};
+        end
+
+	if sms["fs_path"] == nil then
+		USE_FS_PATH = false;
+	else
+		USE_FS_PATH = sms["fs_path"];
+	end
+
+	if sms["broadcast"] == nil then
+		SMS_BROADCAST = false;
+	else
+		SMS_BROADCAST = sms["broadcast"];
+	end
 
 --connect to the database
 	local Database = require "resources.functions.database";
@@ -121,11 +134,14 @@
 			else
 				freeswitch.consoleLog("notice", "[sms] MAILSENT (already): " .. mailsent .. "\n");
 			end
+			freeswitch.consoleLog("notice", "[sms] FINAL: " .. final .. "\n");
+			freeswitch.consoleLog("notice", "[sms] USE_FS_PATH: " .. tostring(USE_FS_PATH) .. "\n");
+			freeswitch.consoleLog("notice", "[sms] SMS_BROADCAST: " .. tostring(SMS_BROADCAST) .. "\n");
 				
 		end
 
 		is_local_user = true;
-		if (USE_FS_PATH and not final) then
+		if (USE_FS_PATH and final == 0) then
 			is_local_user = false;
 			dbh_switch = Database.new('switch');
 			if (SMS_BROADCAST) then

@@ -49,35 +49,62 @@ function route_and_send_sms($from, $to, $body, $media = "") {
 			echo "<div align='center'><strong>Connection to Event Socket failed.</strong></div>";
 		}
 		else {
-				$mailsent = false;
+			$mailsent = false;
+//			$email_regex = '/^((?!(?:(?:\x22?\x5C[\x00-\x7E]\x22?)|(?:\x22?[^\x5C\x22]\x22?)){255,})(?!(?:(?:\x22?\x5C[\x00-\x7E]\x22?)|(?:\x22?[^\x5C\x22]\x22?)){65,}@)(?:(?:[\x21\x23-\x27\x2A\x2B\x2D\x2F-\x39\x3D\x3F\x5E-\x7E]+)|(?:\x22(?:[\x01-\x08\x0B\x0C\x0E-\x1F\x21\x23-\x5B\x5D-\x7F]|(?:\x5C[\x00-\x7F]))*\x22))(?:\.(?:(?:[\x21\x23-\x27\x2A\x2B\x2D\x2F-\x39\x3D\x3F\x5E-\x7E]+)|(?:\x22(?:[\x01-\x08\x0B\x0C\x0E-\x1F\x21\x23-\x5B\x5D-\x7F]|(?:\x5C[\x00-\x7F]))*\x22)))*@(?:(?:(?!.*[^.]{64,})(?:(?:(?:xn--)?[a-z0-9]+(?:-[a-z0-9]+)*\.){1,126}){1,}(?:(?:[a-z][a-z0-9]*)|(?:(?:xn--)[a-z0-9]+))(?:-[a-z0-9]+)*)|(?:\[(?:(?:IPv6:(?:(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){7})|(?:(?!(?:.*[a-f0-9][:\]]){7,})(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){0,5})?::(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){0,5})?)))|(?:(?:IPv6:(?:(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){5}:)|(?:(?!(?:.*[a-f0-9]:){5,})(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){0,3})?::(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){0,3}:)?)))?(?:(?:25[0-5])|(?:2[0-4][0-9])|(?:1[0-9]{2})|(?:[1-9]?[0-9]))(?:\.(?:(?:25[0-5])|(?:2[0-4][0-9])|(?:1[0-9]{2})|(?:[1-9]?[0-9]))){3}))\])))$/i';
+			$email_regex = '/[\w\-\_\.]+@[\w\-\_\.]+/i';
+			$matches = array();
+			if ($debug) {
+				error_log("ORIGINAL TO: " . print_r($to,true).PHP_EOL);
+			}
+			if (preg_match($email_regex, $to, $matches)){
+				$to = $matches[0];
+				$internal_to = true;
+				error_log("Internal To".PHP_EOL);
+			}
+			else{
 				$to = intval(preg_replace('/(^[1])/','', $to));
-				$from = intval($from);
-				$body = preg_replace('([\'])', '\\\'', $body); // escape apostrophes
+				$internal_to = false;
+				error_log("NOT Internal To".PHP_EOL);
+			}
+			$from = intval($from);
+			$body = preg_replace('([\'])', '\\\'', $body); // escape apostrophes
+			if ($debug) {
+				error_log("TO: " . print_r($to,true).PHP_EOL);
+				error_log("FROM: " . print_r($from,true).PHP_EOL);
+				error_log("BODY: " . print_r($body,true).PHP_EOL);
+			}
+			$mailbody = $body;
+			if (gettype($media)=="array") {
+				if (empty($body)) {
+					$body = "MMS message received, see email for attachment";
+				}
+				else {
+					$body .= " (MMS message received, see email for attachment)";
+				}
 				if ($debug) {
-					error_log("TO: " . print_r($to,true));
-					error_log("FROM: " . print_r($from,true));
-					error_log("BODY: " . print_r($body,true));
+					error_log("MMS message (media array present)");
 				}
-				$mailbody = $body;
-				if (gettype($media)=="array") {
-					if (empty($body)) {
-						$body = "MMS message received, see email for attachment";
-					}
-					else {
-						$body .= " (MMS message received, see email for attachment)";
-					}
-					if ($debug) {
-						error_log("MMS message (media array present)");
-					}
-				}
-				if ($debug) {
-					error_log("BODY: " . print_r($body,true));
-				}
-				$body = preg_replace('([\n])', '<br>', $body); // escape newlines
-				if ($debug) {
-					error_log("BODY-revised: " . print_r($body,true));
-				}
+			}
+			if ($debug) {
+				error_log("BODY: " . print_r($body,true).PHP_EOL);
+			}
+			$body = preg_replace('([\n])', '<br>', $body); // escape newlines
+			if ($debug) {
+				error_log("BODY-revised: " . print_r($body,true).PHP_EOL);
+			}
 
+
+			if ($internal_to){
+				$switch_cmd = "api luarun app.lua sms inbound $to $from '$body' 1 1";
+				if ($debug) {
+					error_log('LUA SCRIPT: '.print_r($switch_cmd,true).PHP_EOL);
+				}
+				$result2 = trim(event_socket_request($fp, $switch_cmd));
+				if ($debug) {
+					error_log("RESULT: " . print_r($result2,true).PHP_EOL);
+				}
+			}
+			else{
 				// Check for chatplan_detail in sms_destinations table
 				$sql = "select domain_name, ";
 				$sql .= "chatplan_detail_data, ";
@@ -115,7 +142,6 @@ function route_and_send_sms($from, $to, $body, $media = "") {
 					$sql .= "where v_destinations.dialplan_uuid = v_dialplan_details.dialplan_uuid ";
 					$sql .= "and v_destinations.domain_uuid = v_domains.domain_uuid";
 					$sql .= " and destination_number like :to and dialplan_detail_type = 'transfer'";
-
 					if ($debug) {
 						error_log("SQL: " . print_r($sql,true));
 					}
@@ -135,6 +161,7 @@ function route_and_send_sms($from, $to, $body, $media = "") {
 						break; //limit to 1 row
 					}
 				}
+
 				unset ($prep_statement);
 
 				if ($debug) {
@@ -142,14 +169,14 @@ function route_and_send_sms($from, $to, $body, $media = "") {
 					error_log("MATCH: " . print_r($match[0],true));
 					error_log("DOMAIN_NAME: " . print_r($domain_name,true));
 					error_log("DOMAIN_UUID: " . print_r($domain_uuid,true));
-
 				}
+
 				//load default and domain settings
 				$_SESSION["domain_uuid"] = $domain_uuid;
 				require_once "resources/classes/domains.php";
 				$domain = new domains();
 				$domain->set();
-				
+
 				if ($debug) {
 					error_log("Email from: ". $_SESSION['email']['smtp_from']['text']);
 				}
@@ -194,7 +221,8 @@ function route_and_send_sms($from, $to, $body, $media = "") {
 					}
 				}
 
-				unset ($prep_statement);
+			unset ($prep_statement);
+			}
 		}
 }
 ?>

@@ -25,7 +25,7 @@
 --	POSSIBILITY OF SUCH DAMAGE.
 
 --cluster enabled
-	local USE_FS_PATH = (xml_handler and xml_handler["fs_path"]) or (sms and sms["fs_path"]);
+	local USE_FS_PATH = (sms and sms["fs_path"]);
 	local SMS_BROADCAST = (sms and sms["broadcast"]);
 
 --connect to the database
@@ -100,6 +100,7 @@
 		from = argv[4];
 		body = argv[5];
 		mailsent = argv[6];
+		final = argv[7] or 0;
 		domain_name = string.match(to,'%@+(.+)');
 --		extension = string.match(to,'%d+');
 		extension = string.match(to,'^[%w.]+');
@@ -124,7 +125,7 @@
 		end
 
 		is_local_user = true;
-		if (USE_FS_PATH) then
+		if (USE_FS_PATH and not final) then
 			is_local_user = false;
 			dbh_switch = Database.new('switch');
 			if (SMS_BROADCAST) then
@@ -558,7 +559,7 @@
 		carrier = '';
 	end
 
-	if (extension_uuid ~= nil) then
+	if (extension_uuid ~= nil and not final) then
 		sql = "insert into v_sms_messages";
 		sql = sql .. "(sms_message_uuid,extension_uuid,domain_uuid,start_stamp,from_number,to_number,message,direction,response,carrier)";
 		sql = sql .. " values (:uuid,:extension_uuid,:domain_uuid,now(),:from,:to,:body,:direction,'',:carrier)";

@@ -186,8 +186,34 @@
 			end
 			dbh_switch:release();
 		end
-		
+
+		if (domain_uuid == nil) then
+			--get the domain_uuid using the domain name required for multi-tenant
+			if (domain_name ~= nil) then
+				sql = "SELECT domain_uuid FROM v_domains ";
+				sql = sql .. "WHERE domain_name = :domain_name and domain_enabled = 'true' ";
+				local params = {domain_name = domain_name}
+
+				if (debug["sql"]) then
+					freeswitch.consoleLog("notice", "[sms] SQL: "..sql.."; params:" .. json.encode(params) .. "\n");
+				end
+				status = dbh:query(sql, params, function(rows)
+					domain_uuid = rows["domain_uuid"];
+				end);
+			end
+		end
+
 		if (is_local_user) then
+
+			if (domain_uuid ~= nil) then
+				require "resources.functions.settings";
+				if (type(settings) ~= 'table') then
+					settings = settings(domain_uuid);	-- TODO: find a fix attempt to call global 'settings' (a table value)
+				else
+					return;
+				end
+			end
+
 			--See if target ext is registered.
 			extension_status = "sofia_contact " .. to;
 			reply = api:executeString(extension_status);

@@ -203,17 +203,20 @@
 			end
 		end
 
-		if (is_local_user) then
+		freeswitch.consoleLog("notice", "[sms] is_local_user: " .. tostring(is_local_user) .. "\n");
 
-			if (domain_uuid ~= nil) then
-				require "resources.functions.settings";
-				if (type(settings) ~= 'table') then
-					settings = settings(domain_uuid);	-- TODO: find a fix attempt to call global 'settings' (a table value)
-				else
-					return;
-				end
+		if (domain_uuid ~= nil) then
+			require "resources.functions.settings";
+			if (type(settings) ~= 'table') then
+				freeswitch.consoleLog("notice", "[sms] getting default settings for ".. domain_uuid);
+				settings = settings(domain_uuid);	-- TODO: find a fix attempt to call global 'settings' (a table value)
+			else
+				freeswitch.consoleLog("notice", "[sms] no need to continue");
+				return;
 			end
+		end
 
+		if (is_local_user) then
 			--See if target ext is registered.
 			extension_status = "sofia_contact " .. to;
 			reply = api:executeString(extension_status);

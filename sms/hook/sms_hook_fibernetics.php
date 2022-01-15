@@ -6,7 +6,7 @@ require_once "resources/require.php";
 require_once "../sms_hook_common.php";
 
 if ($debug) {
-	error_log('[SMS] REQUEST: ' .  print_r($_SERVER, true));
+	// error_log('[SMS] REQUEST: ' .  print_r($_SERVER, true));
 }
 
 if (check_acl()) {

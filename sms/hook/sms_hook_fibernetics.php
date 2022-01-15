@@ -10,7 +10,7 @@ if ($debug) {
 }
 
 if (check_acl()) {
-	if  ($_SERVER['CONTENT_TYPE'] == 'application/json; charset=utf-8') {
+	if  (isset($_GET)) {
 		$data = $_GET;
 		if ($debug) {
 			error_log('[SMS] REQUEST: ' .  print_r($data, true));

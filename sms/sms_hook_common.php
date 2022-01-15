@@ -134,9 +134,6 @@ function route_and_send_sms($from, $to, $body, $media = "") {
 						$domain_uuid = $row["domain_uuid"];
 						break; //limit to 1 row
 					}
-					if ($debug){
-						error_log("after analysis result: " . print_r($result, true).PHP_EOL);
-					}
 				}
 				else { // Fall back to destinations table for backwards compatibility
 					$sql = "select domain_name, ";

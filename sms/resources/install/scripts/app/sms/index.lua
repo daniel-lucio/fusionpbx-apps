@@ -558,7 +558,8 @@
 				if outbound_caller_id_number:len() < 11 then
 					outbound_caller_id_number = "1" .. outbound_caller_id_number;
 				end
-				cmd ="curl -X POST \"" .. api_url .. "?password=" .. secret_key .. "&username=" .. username .. "&to=" .. to .. "&from=" .. outbound_caller_id_number .. "&coding=0&text=" .. body;			end
+				cmd ="curl -X POST \"" .. api_url .. "?password=" .. secret_key .. "&username=" .. username .. "&to=" .. to .. "&from=" .. outbound_caller_id_number .. "&coding=0&text=" .. body;
+			end
 			if (debug["info"]) then
 				freeswitch.consoleLog("notice", "[sms] CMD: " .. cmd .. "\n");
 			end

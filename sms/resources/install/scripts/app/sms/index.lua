@@ -553,6 +553,7 @@
 				end
 				cmd ="curl -X POST \"" .. api_url .."\" -H  \"Accept: application/json\" -H \"Content-Type: application/json\"  -u '" .. username .. ":" .. secret_key .. "' -d '{\"From\": \"" .. outbound_caller_id_number .. "\", \"To\": [\"" .. to .. "\"], \"Message\": \"" .. body .. "\"}'";
 			elseif (carrier == "fibernetics") then
+				if to:len() < 11 then
 					to = "1" .. to;
 				end
 				if outbound_caller_id_number:len() < 11 then

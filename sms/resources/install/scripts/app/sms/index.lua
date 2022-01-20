@@ -551,9 +551,14 @@
 				if outbound_caller_id_number:len() < 11 then
 					outbound_caller_id_number = "1" .. outbound_caller_id_number;
 				end
-				cmd ="curl -X POST \"" .. api_url .. "?password=" .. secret_key .. "&username=" .. username .. "&to=" .. to .. "&from=" .. outbound_caller_id_number .. "&coding=0&text=" .. body;
+				cmd ="curl -X POST \"" .. api_url .."\" -H  \"Accept: application/json\" -H \"Content-Type: application/json\"  -u '" .. username .. ":" .. secret_key .. "' -d '{\"From\": \"" .. outbound_caller_id_number .. "\", \"To\": [\"" .. to .. "\"], \"Message\": \"" .. body .. "\"}'";
 			elseif (carrier == "fibernetics") then
-			end
+					to = "1" .. to;
+				end
+				if outbound_caller_id_number:len() < 11 then
+					outbound_caller_id_number = "1" .. outbound_caller_id_number;
+				end
+				cmd ="curl -X POST \"" .. api_url .. "?password=" .. secret_key .. "&username=" .. username .. "&to=" .. to .. "&from=" .. outbound_caller_id_number .. "&coding=0&text=" .. body;			end
 			if (debug["info"]) then
 				freeswitch.consoleLog("notice", "[sms] CMD: " .. cmd .. "\n");
 			end

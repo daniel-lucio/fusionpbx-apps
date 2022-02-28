@@ -129,6 +129,7 @@
 		end
 		savebody = body;
 		body = body:gsub('<br>','\n');
+		body = urlencode(body);
 		
 		if (debug["info"]) then
 			freeswitch.consoleLog("notice", "[sms] TO: " .. to .. "\n");

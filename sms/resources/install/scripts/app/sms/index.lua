@@ -381,7 +381,7 @@
 		end
 		body = body:gsub('%"','');
 		savebody = body;
-		--body = encodeString((body));
+		body = encodeString((body));
 		body = body:gsub('\n','\\n');
 
 		if (debug["info"]) then

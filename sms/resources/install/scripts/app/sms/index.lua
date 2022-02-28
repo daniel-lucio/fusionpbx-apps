@@ -59,11 +59,18 @@
 	end
 
 --define the urlencode function
-	local function urlencode(s)
-		s = string.gsub(s, "([^%w])",function(c)
-			return string.format("%%%02X", string.byte(c))
-		end)
-		return s
+	local char_to_hex = function(c)
+		return string.format("%%%02X", string.byte(c))
+	end
+
+	local function urlencode(url)
+		if url == nil then
+			return
+		end
+		url = url:gsub("\n", "\r\n")
+		url = url.gsub(url, "([^%w _%%%-%.~])", char_to_hex)
+		url = url:gsub(" ", "+")
+		return url
 	end
 
 	local hex_to_char = function(x)

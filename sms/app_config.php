@@ -108,14 +108,14 @@
 		$apps[$x]['default_settings'][$y]['default_setting_enabled'] = 'true';
 		$apps[$x]['default_settings'][$y]['default_setting_description'] = '';
 		$y++;
-        $apps[$x]['default_settings'][$y]['default_setting_uuid'] = '9b36edac-eeac-4a3e-b8d4-664962e3f78c';
-        $apps[$x]['default_settings'][$y]['default_setting_category'] = 'sms';
-        $apps[$x]['default_settings'][$y]['default_setting_subcategory'] = 'carriers';
-        $apps[$x]['default_settings'][$y]['default_setting_name'] = 'array';
-        $apps[$x]['default_settings'][$y]['default_setting_value'] = 'telnyx';
-        $apps[$x]['default_settings'][$y]['default_setting_enabled'] = 'true';
-        $apps[$x]['default_settings'][$y]['default_setting_description'] = '';
-        $y++;
+		$apps[$x]['default_settings'][$y]['default_setting_uuid'] = '9b36edac-eeac-4a3e-b8d4-664962e3f78c';
+		$apps[$x]['default_settings'][$y]['default_setting_category'] = 'sms';
+		$apps[$x]['default_settings'][$y]['default_setting_subcategory'] = 'carriers';
+		$apps[$x]['default_settings'][$y]['default_setting_name'] = 'array';
+		$apps[$x]['default_settings'][$y]['default_setting_value'] = 'telnyx';
+		$apps[$x]['default_settings'][$y]['default_setting_enabled'] = 'true';
+		$apps[$x]['default_settings'][$y]['default_setting_description'] = '';
+		$y++;
 		$apps[$x]['default_settings'][$y]['default_setting_uuid'] = 'd1e19c12-fdb8-4dfa-b21b-213250bf4b7b';
 		$apps[$x]['default_settings'][$y]['default_setting_category'] = 'sms';
 		$apps[$x]['default_settings'][$y]['default_setting_subcategory'] = 'carriers';
@@ -124,7 +124,6 @@
 		$apps[$x]['default_settings'][$y]['default_setting_enabled'] = 'true';
 		$apps[$x]['default_settings'][$y]['default_setting_description'] = '';
 		$y++;
-
 		$apps[$x]['default_settings'][$y]['default_setting_uuid'] = 'e997203c-ca48-45b4-828d-e347ff66fa7c';
 		$apps[$x]['default_settings'][$y]['default_setting_category'] = 'sms';
 		$apps[$x]['default_settings'][$y]['default_setting_subcategory'] = 'twilio_api_url';
@@ -386,6 +385,11 @@
 		$apps[$x]['db'][$y]['fields'][$z]['type'] = "text";
 		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = "";
 		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = "deliver_stamp";
+		$apps[$x]['db'][$y]['fields'][$z]['type']['pgsql'] = "timestamp";
+		$apps[$x]['db'][$y]['fields'][$z]['type']['sqlite'] = "date";
+		$apps[$x]['db'][$y]['fields'][$z]['type']['mysql'] = "timestamp";
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = "";
 
 		$y=1;
 		$apps[$x]['db'][$y]['table']['name'] = "v_sms_destinations";

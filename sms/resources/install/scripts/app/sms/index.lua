@@ -81,6 +81,7 @@
 --get the argv values
 	script_name = argv[0];
 	direction = argv[2];
+	deliver_stamp = nil;
 	
 	if (debug["info"]) then
 		freeswitch.consoleLog("notice", "[sms] DIRECTION: " .. direction .. "\n");
@@ -203,6 +204,7 @@
 			if (reply == "error/user_not_registered") then
 				freeswitch.consoleLog("NOTICE", "[sms] Target extension "..to.." is not registered, not sending via SIMPLE.\n");
 			else
+				deliver_stamp = 
 				local event = freeswitch.Event("CUSTOM", "SMS::SEND_MESSAGE");
 				event:addHeader("proto", "sip");
 				event:addHeader("dest_proto", "sip");
@@ -225,6 +227,7 @@
 					freeswitch.consoleLog("info", event:serialize() .. "\n");
 				end
 				event:fire();
+				deliver_stamp = os.date("%Y-%m-%d %H:%M:%S");
 			end
 			to = extension;
 
@@ -549,6 +552,7 @@
 			if (debug["info"]) then
 				freeswitch.consoleLog("notice", "[sms] CURL Returns: " .. result .. "\n");
 			end
+			deliver_stamp = os.date("%Y-%m-%d %H:%M:%S");
 		else
 			-- XML content
 			freeswitch.consoleLog("notice", "[sms] Body contains XML content and/or is message delivery notification, not sending\n");
@@ -593,9 +597,9 @@
 
 	if (extension_uuid ~= nil and not final) then
 		sql = "insert into v_sms_messages";
-		sql = sql .. "(sms_message_uuid,extension_uuid,domain_uuid,start_stamp,from_number,to_number,message,direction,response,carrier)";
-		sql = sql .. " values (:uuid,:extension_uuid,:domain_uuid,now(),:from,:to,:body,:direction,'',:carrier)";
-		local params = {uuid = uuid(), extension_uuid = extension_uuid, domain_uuid = domain_uuid, from = from, to = to, body = savebody, direction = direction, carrier = carrier }
+		sql = sql .. "(sms_message_uuid,extension_uuid,domain_uuid,start_stamp,from_number,to_number,message,direction,response,carrier,deliver_stamp)";
+		sql = sql .. " values (:uuid,:extension_uuid,:domain_uuid,now(),:from,:to,:body,:direction,'',:carrier,:deliver_stamp)";
+		local params = {uuid = uuid(), extension_uuid = extension_uuid, domain_uuid = domain_uuid, from = from, to = to, body = savebody, direction = direction, carrier = carrier, deliver_stamp = deliver_stamp }
 
 		if (debug["sql"]) then
 			freeswitch.consoleLog("notice", "[sms] SQL: "..sql.."; params:" .. json.encode(params) .. "\n");

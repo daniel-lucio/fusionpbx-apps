@@ -204,7 +204,7 @@
 			if (reply == "error/user_not_registered") then
 				freeswitch.consoleLog("NOTICE", "[sms] Target extension "..to.." is not registered, not sending via SIMPLE.\n");
 			else
-				deliver_stamp = 
+				deliver_stamp = os.date("%Y-%m-%d %H:%M:%S");
 				local event = freeswitch.Event("CUSTOM", "SMS::SEND_MESSAGE");
 				event:addHeader("proto", "sip");
 				event:addHeader("dest_proto", "sip");

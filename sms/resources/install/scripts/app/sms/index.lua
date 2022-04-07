@@ -41,6 +41,7 @@
 		SMS_BROADCAST = sms["broadcast"];
 	end
 
+	require "resources.functions.split";
 --connect to the database
 	local Database = require "resources.functions.database";
 	dbh = Database.new('system');
@@ -78,6 +79,19 @@
 		return output
 	end
 
+	local function urlencode2 (str)
+	   str = string.gsub (str, "([^0-9a-zA-Z !'()*._~-])", -- locale independent
+	      function (c) return string.format ("%%%02X", string.byte(c)) end)
+	   str = string.gsub (str, " ", "+")
+	   return str
+	end
+
+	local function urldecode2 (str)
+	   str = string.gsub (str, "+", " ")
+	   str = string.gsub (str, "%%(%x%x)", function(h) return string.char(tonumber(h,16)) end)
+	   return str
+	end
+
 --get the argv values
 	script_name = argv[0];
 	direction = argv[2];
@@ -98,7 +112,7 @@
 --		extension = string.match(to,'%d+');
 		extension = string.match(to,'^[%w.]+');
 		if (body ~= nil) then
-			body = urldecode(body);
+			body = urldecode2(body);
 		end
 		savebody = body;
 		body = body:gsub('<br>','\n');
@@ -197,14 +211,54 @@
 		end
 
 		if (is_local_user) then
+			local send = true;
+
 			--See if target ext is registered.
 			extension_status = "sofia_contact " .. to;
 			reply = api:executeString(extension_status);
 			--freeswitch.consoleLog("NOTICE", "[sms] Ext status: "..reply .. "\n");
 			if (reply == "error/user_not_registered") then
 				freeswitch.consoleLog("NOTICE", "[sms] Target extension "..to.." is not registered, not sending via SIMPLE.\n");
-			else
-				deliver_stamp = os.date("%Y-%m-%d %H:%M:%S");
+				send = false;
+			end
+
+			if (send) then
+				local sofia_lines =  api:executeString('sofia status profile internal user '..to);
+				local l  = split(sofia_lines,"\n",true);
+				local total_registrations = 0;
+				local total_passive_registrations = 0;
+				for i,v in ipairs(l) do
+					freeswitch.consoleLog("notice", "[sms] "..v);
+					-- Agent:
+					_, _, agent = v:find('Agent:%s+(.+)');
+					if (agent ~= nil) then
+						freeswitch.consoleLog("notice", "[sms] Agent found:"..agent);
+						-- TODO: find a better way to push it
+--						if (agent == 'SessionPush 1.2') then
+--							total_passive_registrations = total_passive_registrations + 1;
+--						end
+						if settings['sms']['passive_user_agents'] ~= nil then
+							for ii, aa in ipairs(settings['sms']['passive_user_agents']) do
+								if (agent == aa) then
+									total_passive_registrations = total_passive_registrations + 1;
+								end
+							end
+						end
+					end
+					_, _, total = v:find('Total items returned:%s+(%d+)');
+					if (total ~= nil) then
+						total_registrations = total;
+					end
+				end
+				freeswitch.consoleLog("notice", "[sms] total registrations:"..total_registrations);
+				freeswitch.consoleLog("notice", "[sms] total passive registrations:"..total_passive_registrations);
+
+				if total_registrations == total_passive_registrations then
+					-- there is no active registration
+					send = false;
+				end
+			end
+			if (send) then
 				local event = freeswitch.Event("CUSTOM", "SMS::SEND_MESSAGE");
 				event:addHeader("proto", "sip");
 				event:addHeader("dest_proto", "sip");
@@ -588,6 +642,9 @@
 				end
 				status = dbh:query(sql, params, function(rows)
 					extension_uuid = rows["extension_uuid"];
+					if (debug["sql"]) then
+						freeswitch.consoleLog("notice", "[sms] Found extension UUID:" .. extension_uuid .. "\n");
+					end
 				end);
 			end
 	end
@@ -595,11 +652,18 @@
 		carrier = '';
 	end
 
-	if (extension_uuid ~= nil and not final) then
+	if (extension_uuid ~= nil and final == 0) then
 		sql = "insert into v_sms_messages";
-		sql = sql .. "(sms_message_uuid,extension_uuid,domain_uuid,start_stamp,from_number,to_number,message,direction,response,carrier,deliver_stamp)";
-		sql = sql .. " values (:uuid,:extension_uuid,:domain_uuid,now(),:from,:to,:body,:direction,'',:carrier,:deliver_stamp)";
-		local params = {uuid = uuid(), extension_uuid = extension_uuid, domain_uuid = domain_uuid, from = from, to = to, body = savebody, direction = direction, carrier = carrier, deliver_stamp = deliver_stamp }
+
+		if deliver_stamp ~= nil then
+			sql = sql .. "(sms_message_uuid,extension_uuid,domain_uuid,start_stamp,from_number,to_number,message,direction,response,carrier,deliver_stamp)";
+			sql = sql .. " values (:uuid,:extension_uuid,:domain_uuid,now(),:from,:to,:body,:direction,'',:carrier,:deliver_stamp)";
+			params = {uuid = uuid(), extension_uuid = extension_uuid, domain_uuid = domain_uuid, from = from, to = to, body = savebody, direction = direction, carrier = carrier, deliver_stamp = deliver_stamp }
+		else
+			sql = sql .. "(sms_message_uuid,extension_uuid,domain_uuid,start_stamp,from_number,to_number,message,direction,response,carrier,deliver_stamp)";
+			sql = sql .. " values (:uuid,:extension_uuid,:domain_uuid,now(),:from,:to,:body,:direction,'',:carrier, NULL)";
+			params = {uuid = uuid(), extension_uuid = extension_uuid, domain_uuid = domain_uuid, from = from, to = to, body = savebody, direction = direction, carrier = carrier}
+		end
 
 		if (debug["sql"]) then
 			freeswitch.consoleLog("notice", "[sms] SQL: "..sql.."; params:" .. json.encode(params) .. "\n");

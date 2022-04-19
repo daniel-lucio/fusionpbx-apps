@@ -112,7 +112,7 @@
 	send = true;
 
 	--See if target ext is registered.
-	extension_status = "sofia_contact " .. to .. '@' .. domain_name;
+	extension_status = "sofia_contact " .. extension .. '@' .. domain_name;
 	reply = api:executeString(extension_status);
 	--freeswitch.consoleLog("NOTICE", "[sms-distpacher] Ext status: "..reply .. "\n");
 	if (reply == "error/user_not_registered") then

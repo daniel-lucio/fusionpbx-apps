@@ -170,7 +170,7 @@
 		event:addHeader("from_host", domain_name);
 		event:addHeader("from_full", "sip:" .. from .."@".. domain_name);
 		event:addHeader("sip_profile","internal");
-		event:addHeader("to", to .."@".. domain_name);
+		event:addHeader("to", extension .."@".. domain_name);
 		event:addHeader("to_user", extension);
 		event:addHeader("to_host", domain_name);
 		event:addHeader("subject", "SIMPLE MESSAGE");

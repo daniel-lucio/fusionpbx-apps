@@ -135,10 +135,12 @@
 --				if (agent == 'SessionPush 1.2') then
 --					total_passive_registrations = total_passive_registrations + 1;
 --				end
-				if settings['sms']['passive_user_agents'] ~= nil then
-					for ii, aa in ipairs(settings['sms']['passive_user_agents']) do
-						if (agent == aa) then
-							total_passive_registrations = total_passive_registrations + 1;
+				if settings['sms'] ~= nil then
+					if settings['sms']['passive_user_agents'] ~= nil then
+						for ii, aa in ipairs(settings['sms']['passive_user_agents']) do
+							if (agent == aa) then
+								total_passive_registrations = total_passive_registrations + 1;
+							end
 						end
 					end
 				end

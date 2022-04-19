@@ -121,6 +121,8 @@
 	end
 
 	if (send) then
+		require "resources.functions.settings";
+		settings = settings(domain_uuid);
 		local sofia_lines =  api:executeString('sofia status profile internal user '..to);
 		local l  = split(sofia_lines,"\n",true);
 		local total_registrations = 0;
@@ -138,6 +140,7 @@
 				if settings['sms'] ~= nil then
 					if settings['sms']['passive_user_agents'] ~= nil then
 						for ii, aa in ipairs(settings['sms']['passive_user_agents']) do
+							freeswitch.consoleLog("notice", "[sms-distpacher] Comparing vs ["..aa.."]\n");
 							if (agent == aa) then
 								total_passive_registrations = total_passive_registrations + 1;
 							end
@@ -152,8 +155,9 @@
 		end
 		freeswitch.consoleLog("notice", "[sms-distpacher] total registrations:"..total_registrations);
 		freeswitch.consoleLog("notice", "[sms-distpacher] total passive registrations:"..total_passive_registrations);
-			if total_registrations == total_passive_registrations then
+		if tonumber(total_registrations) == tonumber(total_passive_registrations) then
 			-- there is no active registration
+			freeswitch.consoleLog("notice", "[sms-distpacher] Not sending");
 			send = false;
 		end
 	end

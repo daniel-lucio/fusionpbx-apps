@@ -31,7 +31,7 @@ if (!$fp) {
 }
 
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-$sql = "SELECT * FROM v_sms_messages WHERE direction = 'inbound' AND (deliver_stamp IS NULL OR deliver_stamp = '0000-00-00 00:00:00')";
+$sql = "SELECT * FROM v_sms_messages WHERE direction = 'inbound' AND (deliver_stamp IS NULL" .($db_type=='mysql'?" OR deliver_stamp = '0000-00-00 00:00:00'":"").")";
 $result = $db->query($sql)->fetchAll(PDO::FETCH_NAMED);
 
 foreach($result as &$sms){

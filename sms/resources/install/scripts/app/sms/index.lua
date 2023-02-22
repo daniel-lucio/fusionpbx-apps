@@ -238,6 +238,7 @@
 		end
 
 		is_local_user = true;
+		database_hostnames = {};
 		if (USE_FS_PATH and final == 0) then
 			is_local_user = false;
 			dbh_switch = Database.new('switch');
@@ -265,7 +266,6 @@
 				end
 			end
 
-			database_hostnames = {};
 			dbh_switch:query(sql, params, function(row)
 				database_hostname = row["hostname"];	-- Last hostname
 				if  database_hostname ~= nil then

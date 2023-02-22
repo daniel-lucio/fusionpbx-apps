@@ -205,7 +205,7 @@ function route_and_send_sms($from, $to, $body, $media = "") {
 					foreach ($result as &$row) {
 						$switch_cmd = "api luarun app.lua sms inbound ";
 						$switch_cmd .= $row['destination_number'] . "@" . $domain_name;
-						$switch_cmd .= " " . $from . " '" . $body . "' " . (int)$mailsent. " " . $original_to;
+						$switch_cmd .= " " . $from . " '" . $body . "' " . (int)$mailsent. " 0 " . $original_to;
 						if ($debug) {
 							error_log('Ring group'.PHP_EOL);
 							error_log(print_r($switch_cmd,true).PHP_EOL);
@@ -216,7 +216,7 @@ function route_and_send_sms($from, $to, $body, $media = "") {
 						}
 					}
 				} else { //single extension
-					$switch_cmd = "api luarun app.lua sms inbound " . $match[0] . "@" . $domain_name . " " . $from . " '" . $body . "' " . (int)$mailsent . " " . $original_to;
+					$switch_cmd = "api luarun app.lua sms inbound " . $match[0] . "@" . $domain_name . " " . $from . " '" . $body . "' " . (int)$mailsent . " 0 " . $original_to;
 					if ($debug) {
 						error_log('Single extension'.PHP_EOL);
 						error_log(print_r($switch_cmd,true));

@@ -390,6 +390,7 @@
 				end
 				event:fire();
 				deliver_stamp = os.date("%Y-%m-%d %H:%M:%S");
+				final = 1;
 			end
 			to = extension;
 

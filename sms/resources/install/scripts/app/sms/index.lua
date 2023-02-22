@@ -453,6 +453,7 @@
 				end 
 			end
 		else
+			freeswitch.consoleLog("notice", "[sms] Forwarding to the right server(s) using HTTP\n");
 			--forward to the right server using HTTP
 			for i,v in ipairs(database_hostnames) do
 --				local url = http_protocol.."://"..v..project_path..'/app/sms/hook/sms_hook_internal.php';

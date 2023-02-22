@@ -116,7 +116,7 @@
 		user_context = params['user_context'] or '';
 		body = params['body'] or '';
 		context = params['context'] or '';
-
+		caller_destination = params['caller_destination'] or to;
 		answer = [[<?xml version="1.0"?>
 <cdr core-uuid="b658d05e-c42c-11e3-bdcd-65b6c3cdac7d" switchname="]] .. switchname .. [[">
   <channel_data>
@@ -155,7 +155,7 @@
     <caller_id_number>]] .. from .. [[</caller_id_number>
     <last_sent_callee_id_number>]] .. to .. [[</last_sent_callee_id_number>
     <effective_caller_id_number>]] .. from .. [[</effective_caller_id_number>
-    <caller_destination>]] .. to .. [[</caller_destination>
+    <caller_destination>]] .. caller_destination .. [[</caller_destination>
     <domain_name>]] .. domain_name .. [[</domain_name>
     <domain_uuid>]] .. domain_uuid .. [[</domain_uuid>
     <accountcode>]] .. accountcode .. [[</accountcode>
@@ -812,6 +812,7 @@
 		params['accountcode'] = accountcode;
 		params['switchname'] = trim(api:execute("switchname", ""));
 		params['user_context'] = user_context;
+		params['caller_destination'] = original_to;
 		xml = build_xml_string(params);
 		freeswitch.consoleLog("notice", "[sms] xml: " .. xml .. "\n");
 		curl_cmd = "curl -v -X POST \"http://127.0.0.1/app/enhanced-cdr-importer/xml_cdr_import.php?record_type=text&uuid=a_" .. params['core_uuid'] .. "\" --data 'cdr="..xml.."'  -u '3OjcDkwGSoHP1S9hHJxFh980nLU:y4h5Mbv5uLioHoq5qSQzdNpbZi8'  -H 'Expect:'";

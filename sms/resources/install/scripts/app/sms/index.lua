@@ -208,6 +208,8 @@
 		body = argv[5];
 		mailsent = argv[6];
 		final = argv[7] or 0;
+		original_to = argv[8] or '';
+	
 		domain_name = string.match(to,'%@+(.+)');
 --		extension = string.match(to,'%d+');
 		extension = string.match(to,'^[%w.]+');
@@ -228,6 +230,7 @@
 			else
 				freeswitch.consoleLog("notice", "[sms] MAILSENT (already): " .. mailsent .. "\n");
 			end
+			freeswitch.consoleLog("notice", "[sms] ORIGINAL_TO: " .. original_to .. "\n");
 			freeswitch.consoleLog("notice", "[sms] FINAL: " .. final .. "\n");
 			freeswitch.consoleLog("notice", "[sms] USE_FS_PATH: " .. tostring(USE_FS_PATH) .. "\n");
 			freeswitch.consoleLog("notice", "[sms] SMS_BROADCAST: " .. tostring(SMS_BROADCAST) .. "\n");

@@ -24,6 +24,7 @@
 --	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 --	POSSIBILITY OF SUCH DAMAGE.
 
+	start_epoch = os.time(os.date("!*t"));
 --cluster enabled
 	if sms == nil then
                 sms = {};
@@ -92,6 +93,105 @@
 	   return str
 	end
 
+	function build_xml_string(params)
+		direction = params['direction'] or '';
+		uuid = params['uuid'] or uuid();
+		from = params['from'] or '';
+		to = params['to'] or '';
+		extension_uuid = params['extension_uuid'] or '';
+		domain_uuid = params['domain_uuid'] or '';
+		domain_name = params['domain_name'] or '';
+		core_uuid = params['core_uuid'] or '';
+		start_epoch = params['start_epoch'] or os.time(os.date("!*t"));
+		end_epoch = params['end_epoch'] or os.time(os.date("!*t"));
+		start_stamp = os.date('%Y-%m-%d %H%%3A%M%%3A%S', tonumber(start_epoch));
+		end_stamp = os.date('%Y-%m-%d %H%%3A%M%%3A%S', tonumber(end_epoch));
+		duration = (end_epoch - start_epoch + 1) or 1;
+		billsec = 1;
+		billmsec = 1000;
+		deliver_epoch = params['deliver_epoch'] or os.time(os.date("!*t"));
+		deliver_stamp = os.date('%Y-%m-%d %H%%3A%M%%3A%S', tonumber(deliver_epoch));
+		accountcode = params['accountcode'] or '';
+		switchname = params['switchname'] or trim(api:execute("switchname", ""));
+		user_context = params['user_context'] or '';
+		body = params['body'] or '';
+		context = params['context'] or '';
+
+		answer = [[<?xml version="1.0"?>
+<cdr core-uuid="b658d05e-c42c-11e3-bdcd-65b6c3cdac7d" switchname="]] .. switchname .. [[">
+  <channel_data>
+    <state>CS_REPORTING</state>
+    <direction>]] .. direction .. [[</direction>
+    <state_number>11</state_number>
+    <flags>0=1;37=1;39=1;73=1</flags>
+    <caps>1=1;2=1;3=1;4=1;5=1;6=1</caps>
+  </channel_data>
+  <variables>
+    <direction>]] .. direction .. [[</direction>
+    <call_direction>]] .. direction .. [[</call_direction>
+    <uuid>]] .. uuid .. [[</uuid>
+    <session_id>1600</session_id>
+    <sip_from_user>]] .. from .. [[</sip_from_user>
+    <sip_from_uri>]] .. from .. [[%40XX.XX.XXX.XXX</sip_from_uri>
+    <sip_from_host>XX.XX.XXX.XXX</sip_from_host>
+    <hangup_cause>NORMAL_CLEARING</hangup_cause>
+    <hangup_cause_q850>16</hangup_cause_q850>
+    <start_epoch>]] .. start_epoch .. [[</start_epoch>
+    <start_uepoch>]] .. start_epoch ..[[000000</start_uepoch>
+    <start_stamp>]] .. start_stamp .. [[</start_stamp>
+    <profile_start_stamp>]] .. start_stamp .. [[</profile_start_stamp>
+    <profile_start_epoch>]] .. start_epoch .. [[</profile_start_epoch>
+    <profile_start_uepoch>]] .. start_epoch .. [[000000</profile_start_uepoch>
+    <answer_epoch>]] .. deliver_epoch .. [[</answer_epoch>
+    <answer_uepoch>]] .. deliver_epoch .. [[000000</answer_uepoch>
+    <answer_stamp>]] .. deliver_stamp .. [[</answer_stamp>
+    <end_stamp>]] .. end_stamp .. [[</end_stamp>
+    <end_epoch>]] .. end_epoch .. [[</end_epoch>
+    <end_uepoch>]] .. end_epoch .. [[000000</end_uepoch>
+    <duration>]] .. duration .. [[</duration>
+    <billsec>]] .. billsec .. [[</billsec>
+    <billmsec>]] .. billmsec .. [[</billmsec>
+    <extension_uuid>]] .. extension_uuid .. [[</extension_uuid>
+    <caller_id_number>]] .. from .. [[</caller_id_number>
+    <last_sent_callee_id_number>]] .. to .. [[</last_sent_callee_id_number>
+    <effective_caller_id_number>]] .. from .. [[</effective_caller_id_number>
+    <caller_destination>]] .. to .. [[</caller_destination>
+    <domain_name>]] .. domain_name .. [[</domain_name>
+    <domain_uuid>]] .. domain_uuid .. [[</domain_uuid>
+    <accountcode>]] .. accountcode .. [[</accountcode>
+    <user_context>]] .. user_context .. [[</user_context>
+    <context>]] .. context .. [[</context>
+    <message>]] .. body .. [[</message>
+    <leg>a</leg>
+  </variables>
+  <callflow>
+    <times>
+      <created_time>]] .. start_epoch .. [[</created_time>
+      <answered_time>]] .. deliver_epoch .. [[</answered_time>
+      <hangup_time>]] .. end_epoch .. [[</hangup_time>
+    </times>
+    <caller_profile>
+      <context>]] .. context .. [[</context>
+      <username>]] .. from .. [[</username>
+      <dialplan>XML</dialplan>
+      <caller_id_name></caller_id_name>
+      <caller_id_number>]] .. from .. [[</caller_id_number>
+      <callee_id_name></callee_id_name>
+      <callee_id_number></callee_id_number>
+      <ani>]] .. from .. [[</ani>
+      <aniii></aniii>
+      <network_addr></network_addr>
+      <rdnis></rdnis>
+      <destination_number>]] .. to .. [[</destination_number>
+      <uuid>]] .. uuid .. [[</uuid>
+      <source>mod_sms</source>
+      <chan_name></chan_name>
+    </caller_profile>
+  </callflow>
+</cdr>]];
+
+		return answer;
+	end
 --get the argv values
 	script_name = argv[0];
 	direction = argv[2];
@@ -212,6 +312,11 @@
 
 		if (is_local_user) then
 			local send = true;
+
+			accountcode = api:executeString('user_data ' .. extension .. '@' .. domain_name .. ' var accountcode');
+			user_context = api:executeString('user_data ' .. extension .. '@' .. domain_name .. ' var user_context');
+			freeswitch.consoleLog("NOTICE", "[sms] accountcode: " .. accountcode .. "\n");
+			freeswitch.consoleLog("NOTICE", "[sms] user_context: " .. user_context .. "\n");
 
 			--See if target ext is registered.
 			extension_status = "sofia_contact " .. to;
@@ -394,6 +499,8 @@
 		if (debug["info"]) then
 			freeswitch.consoleLog("notice", "[sms] BODY-raw: " .. body .. "\n");
 		end
+		mailsent = argv[6];
+		final = argv[7] or 0;
 		--Clean body up for Groundwire send
 		smsraw = body;
 		smstempst, smstempend = string.find(smsraw, 'Content%-length:');
@@ -411,6 +518,11 @@
 		savebody = body;
 		body = encodeString((body));
 		body = body:gsub('\n','\\n');
+
+		accountcode = api:executeString('user_data ' .. from .. '@' .. domain_name .. ' var accountcode');
+		user_context = api:executeString('user_data ' .. from .. '@' .. domain_name .. ' var user_context');
+		freeswitch.consoleLog("NOTICE", "[sms] accountcode: " .. accountcode .. "\n");
+		freeswitch.consoleLog("NOTICE", "[sms] user_context: " .. user_context .. "\n");
 
 		if (debug["info"]) then
 			if (message ~= nil) then
@@ -535,7 +647,6 @@
 		if (msgtype ~= nil and string.find(msgtype, "imdn") ~= nil) then mdn = true end;
 		if (not mdn) then 
 			-- No XML content, continue processing
-			body = body:gsub("'","'\\''"); -- Fixing Apostrophe for CURL
 			if (carrier == "flowroute") then
 				cmd = "curl -u ".. access_key ..":" .. secret_key .. " -H \"Content-Type: application/json\" -X POST -d '{\"to\":\"" .. to .. "\",\"from\":\"" .. outbound_caller_id_number .."\",\"body\":\"" .. body .. "\"}' " .. api_url;
 			elseif (carrier == "peerless") then	
@@ -601,9 +712,10 @@
 			if (debug["info"]) then
 				freeswitch.consoleLog("notice", "[sms] CMD: " .. cmd .. "\n");
 			end
-			local handle = io.popen(cmd)
-			local result = handle:read("*a")
-			handle:close()
+			local handle = io.popen(cmd);
+			local result = handle:read("*a");
+			handle:close();
+			final = 1;
 			if (debug["info"]) then
 				freeswitch.consoleLog("notice", "[sms] CURL Returns: " .. result .. "\n");
 			end
@@ -631,6 +743,13 @@
 				end);
 			end
 	end
+
+	if (domain_uuid ~= nil) then
+		freeswitch.consoleLog("notice", "[sms] domain_uuid:" .. domain_uuid .. "\n");
+	else
+		freeswitch.consoleLog("notice", "[sms] domain_uuid is null\n");
+	end
+
 	if (extension_uuid == nil) then
 		--get the extension_uuid using the domain_uuid and the extension number
 			if (domain_uuid ~= nil and extension ~= nil) then
@@ -644,16 +763,21 @@
 				status = dbh:query(sql, params, function(rows)
 					extension_uuid = rows["extension_uuid"];
 					if (debug["sql"]) then
-						freeswitch.consoleLog("notice", "[sms] Found extension UUID:" .. extension_uuid .. "\n");
+						freeswitch.consoleLog("notice", "[sms] Found extension UUID: " .. extension_uuid .. "\n");
 					end
 				end);
 			end
+	else
+		freeswitch.consoleLog("notice", "[sms] Extension UUID: " .. extension_uuid .. "\n");
 	end
 	if (carrier == nil) then
 		carrier = '';
 	end
 
-	if (extension_uuid ~= nil and final == 0) then
+	freeswitch.consoleLog("notice", "[sms] extension_uuid: " .. extension_uuid .. "\n");
+	freeswitch.consoleLog("notice", "[sms] final: " .. final .. "\n");
+	if (extension_uuid ~= nil and tonumber(final) == 1) then
+		end_epoch = os.time(os.date("!*t"));
 		sql = "insert into v_sms_messages";
 
 		if deliver_stamp ~= nil then
@@ -670,4 +794,26 @@
 			freeswitch.consoleLog("notice", "[sms] SQL: "..sql.."; params:" .. json.encode(params) .. "\n");
 		end
 		dbh:query(sql,params);
+
+		params['domain_name'] = domain_name;
+		if message ~= nil then
+			params['core_uuid'] = message:getHeader("Core-UUID") or uuid();
+		params['context'] = message:getHeader("context");
+		else
+			params['core_uuid'] = uuid();
+			params['context'] = 'public';
+		end
+		params['start_epoch'] = start_epoch;
+		params['end_epoch'] = end_epoch;
+		params['accountcode'] = accountcode;
+		params['switchname'] = trim(api:execute("switchname", ""));
+		params['user_context'] = user_context;
+		xml = build_xml_string(params);
+		freeswitch.consoleLog("notice", "[sms] xml: " .. xml .. "\n");
+		curl_cmd = "curl -v -X POST \"http://127.0.0.1/app/enhanced-cdr-importer/xml_cdr_import.php?record_type=text&uuid=a_" .. params['core_uuid'] .. "\" --data 'cdr="..xml.."'  -u '3OjcDkwGSoHP1S9hHJxFh980nLU:y4h5Mbv5uLioHoq5qSQzdNpbZi8'  -H 'Expect:'";
+		freeswitch.consoleLog("notice", "[sms] curl_cmd: " .. curl_cmd .. "\n");
+		result = api:execute('system', curl_cmd);
+		freeswitch.consoleLog("notice", "[sms] result: " .. result .. "\n");
+	else
+		freeswitch.consoleLog("notice", "[sms] no pushing into xml handler\n");
 	end

@@ -457,7 +457,7 @@
 			for i,v in ipairs(database_hostnames) do
 --				local url = http_protocol.."://"..v..project_path..'/app/sms/hook/sms_hook_internal.php';
 				local url = "https://"..v..project_path..'/app/sms/hook/sms_hook_internal.php';
-				local payload = {from=from, to=to, body=body};
+				local payload = {from=from, to=original_to, body=body};	-- we use to to find the right server, but we need to pass the original destination tho
 				local json_payload = json.encode(payload);
 				local sms_cmd = "curl -k -H \"Content-Type: application/json\" -X POST -d '"..json_payload.."' "..url;
 				freeswitch.consoleLog("notice", "[sms] url: "..url);

@@ -206,8 +206,8 @@
 		to = argv[3];
 		from = argv[4];
 		body = argv[5];
-		mailsent = argv[6];
-		final = argv[7] or 0;
+		mailsent = tonumber(argv[6]);
+		final = tonumber(argv[7]) or 0;
 		original_to = argv[8] or '';
 	
 		domain_name = string.match(to,'%@+(.+)');

@@ -93,7 +93,7 @@
 	   return str
 	end
 
-	function build_xml_string(params)
+	function build_xml_string(params, variables)
 		direction = params['direction'] or '';
 		uuid = params['uuid'] or uuid();
 		from = params['from'] or '';
@@ -163,6 +163,19 @@
     <context>]] .. context .. [[</context>
     <message>]] .. body .. [[</message>
     <leg>a</leg>
+	]];
+		if (variables ~= nil) then
+			if (type(variables) = 'table') then
+				for i,v in ipairs(variables) do
+					freeswitch.consoleLog("notice", "[sms] Adding " .. v .."\n");
+				end
+			else
+				freeswitch.consoleLog("notice", "[sms] Skipping, variables is not NIL but not a Table\n");
+			end
+		else
+			freeswitch.consoleLog("notice", "[sms] Skipping, variables is NIL\n");
+		end
+		answer = answer .. [[
   </variables>
   <callflow>
     <times>
@@ -814,7 +827,8 @@
 		params['switchname'] = trim(api:execute("switchname", ""));
 		params['user_context'] = user_context;
 		params['caller_destination'] = original_to;
-		xml = build_xml_string(params);
+		variables = settings['sms']['variables'];
+		xml = build_xml_string(params, variables);
 		freeswitch.consoleLog("notice", "[sms] xml: " .. xml .. "\n");
 		curl_cmd = "curl -v -X POST \"http://127.0.0.1/app/enhanced-cdr-importer/xml_cdr_import.php?record_type=text&uuid=a_" .. params['core_uuid'] .. "\" --data 'cdr="..xml.."'  -u '3OjcDkwGSoHP1S9hHJxFh980nLU:y4h5Mbv5uLioHoq5qSQzdNpbZi8'  -H 'Expect:'";
 		freeswitch.consoleLog("notice", "[sms] curl_cmd: " .. curl_cmd .. "\n");

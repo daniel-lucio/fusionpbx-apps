@@ -163,11 +163,16 @@
     <context>]] .. context .. [[</context>
     <message>]] .. body .. [[</message>
     <leg>a</leg>
-	]];
+]];
 		if (variables ~= nil) then
 			if (type(variables) == 'table') then
 				for i,v in ipairs(variables) do
-					freeswitch.consoleLog("notice", "[sms] Adding " .. v .."\n");
+					freeswitch.consoleLog("notice", "[sms] Adding #" .. i .. " " .. v .."\n");
+					var_name = string.match(v,'(.+)=');
+					var_value = sring.match(v,'=(.+)');
+					freeswitch.consoleLog("notice", "[sms] Detected " .. var_name .. " = " .. var_value .."\n");
+					answer = anser .. [[<]] .. var_name .. [[>]] .. var_value .. [[</]] .. var_name .. [[>
+]];
 				end
 			else
 				freeswitch.consoleLog("notice", "[sms] Skipping, variables is not NIL but not a Table\n");
@@ -319,11 +324,7 @@
 			require "resources.functions.settings";
 			if (type(settings) ~= 'table') then
 				freeswitch.consoleLog("notice", "[sms] getting default settings for ".. domain_uuid);
-				settings = settings(domain_uuid);	-- TODO: find a fix attempt to call global 'settings' (a table value)
-				for i, v in ipairs(settings['sms']['variables']) do
-					freeswitch.consoleLog("notice", "setting.sms #" .. i .. ": " .. v .. "\n");
-				end
-			
+				settings = settings(domain_uuid);	-- TODO: find a fix attempt to call global 'settings' (a table value)			
 			else
 				freeswitch.consoleLog("notice", "[sms] no need to continue");
 				return;

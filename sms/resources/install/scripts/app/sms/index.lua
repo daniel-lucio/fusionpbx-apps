@@ -320,7 +320,7 @@
 			if (type(settings) ~= 'table') then
 				freeswitch.consoleLog("notice", "[sms] getting default settings for ".. domain_uuid);
 				settings = settings(domain_uuid);	-- TODO: find a fix attempt to call global 'settings' (a table value)
-				for i, v in ipairs(settings.sms) do
+				for i, v in ipairs(settings['sms']['variables']) do
 					freeswitch.consoleLog("notice", "setting.sms #" .. i .. ": " .. v .. "\n");
 				end
 			

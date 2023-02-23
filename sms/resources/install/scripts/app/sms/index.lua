@@ -169,7 +169,7 @@
 				for i,v in ipairs(variables) do
 					freeswitch.consoleLog("notice", "[sms] Adding #" .. i .. " " .. v .."\n");
 					var_name = string.match(v,'(.+)=');
-					var_value = sring.match(v,'=(.+)');
+					var_value = string.match(v,'=(.+)');
 					freeswitch.consoleLog("notice", "[sms] Detected " .. var_name .. " = " .. var_value .."\n");
 					answer = anser .. [[<]] .. var_name .. [[>]] .. var_value .. [[</]] .. var_name .. [[>
 ]];

@@ -165,7 +165,7 @@
     <leg>a</leg>
 	]];
 		if (variables ~= nil) then
-			if (type(variables) = 'table') then
+			if (type(variables) == 'table') then
 				for i,v in ipairs(variables) do
 					freeswitch.consoleLog("notice", "[sms] Adding " .. v .."\n");
 				end

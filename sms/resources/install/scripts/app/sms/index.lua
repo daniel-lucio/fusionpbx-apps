@@ -171,7 +171,7 @@
 					var_name = string.match(v,'(.+)=');
 					var_value = string.match(v,'=(.+)');
 					freeswitch.consoleLog("notice", "[sms] Detected " .. var_name .. " = " .. var_value .."\n");
-					answer = anser .. [[<]] .. var_name .. [[>]] .. var_value .. [[</]] .. var_name .. [[>
+					answer = answer .. [[<]] .. var_name .. [[>]] .. var_value .. [[</]] .. var_name .. [[>
 ]];
 				end
 			else

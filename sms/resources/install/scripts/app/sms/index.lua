@@ -507,13 +507,13 @@
 		end
 		if (argv[4] ~= nil) then
 			from = argv[4];
-			extension = string.match(from,'%d+');
-			if extension:len() > 7 then
-				outbound_caller_id_number = extension;
-			end 
 		else
 			from = message:getHeader("from_user");
 		end
+		extension = string.match(from,'%d+');
+		if extension:len() > 7 then
+			outbound_caller_id_number = extension;
+		end 
 		if (argv[5] ~= nil) then
 			body = argv[5];
 		else
@@ -743,6 +743,83 @@
 				freeswitch.consoleLog("notice", "[sms] CURL Returns: " .. result .. "\n");
 			end
 			deliver_stamp = os.date("%Y-%m-%d %H:%M:%S");
+		
+			if (mailsent == 0) then
+				freeswitch.consoleLog("notice", "[sms] Looks like email hasn't been sent");
+				--Send inbound SMS via email delivery 
+				-- This is legacy code retained for backwards compatibility.  See /var/www/fusionpbx/app/sms/sms_email.php for current.
+				if (domain_uuid == nil) then
+					--get the domain_uuid using the domain name required for multi-tenant
+						if (domain_name ~= nil) then
+							sql = "SELECT domain_uuid FROM v_domains ";
+							sql = sql .. "WHERE domain_name = :domain_name and domain_enabled = 'true' ";
+							local params = {domain_name = domain_name}
+
+							if (debug["sql"]) then
+								freeswitch.consoleLog("notice", "[sms] SQL: "..sql.."; params:" .. json.encode(params) .. "\n");
+							end
+							status = dbh:query(sql, params, function(rows)
+								domain_uuid = rows["domain_uuid"];
+							end);
+						end
+				end
+				if (domain_uuid == nil) then
+					freeswitch.consoleLog("notice", "[sms] domain_uuid is nill, cannot send sms to email.");
+				else
+					sql = "SELECT v_contact_emails.email_address ";
+					sql = sql .. "from v_extensions, v_extension_users, v_users, v_contact_emails ";
+					sql = sql .. "where v_extensions.extension = :toext and v_extensions.domain_uuid = :domain_uuid and v_extensions.extension_uuid = v_extension_users.extension_uuid ";
+					sql = sql .. "and v_extension_users.user_uuid = v_users.user_uuid and v_users.contact_uuid = v_contact_emails.contact_uuid ";
+					sql = sql .. "and (v_contact_emails.email_label = 'sms' or v_contact_emails.email_label = 'SMS')";
+					local params = {toext = extension, domain_uuid = domain_uuid}
+
+					if (debug["sql"]) then
+						freeswitch.consoleLog("notice", "[sms] SQL: "..sql.."; params:" .. json.encode(params) .. "\n");
+					end
+					status = dbh:query(sql, params, function(rows)
+						send_to_email_address = rows["email_address"];
+					end);
+
+
+					if (send_to_email_address == nill) then
+						sql = "select email from v_sms_destinations where domain_uuid = :domain_uuid AND destination = :outbound_caller_id_number";
+						local params = {outbound_caller_id_number = outbound_caller_id_number, domain_uuid = domain_uuid}
+						if (debug["sql"]) then
+							freeswitch.consoleLog("notice", "[sms] SQL: "..sql.."; params:" .. json.encode(params) .. "\n");
+						end
+						status = dbh:query(sql, params, function(rows)
+							send_to_email_address = rows["email"];
+						end);
+					end
+
+
+					send_from_email_address = 'noreply@example.com'  -- this gets overridden if using v_mailto.php
+
+					if (send_to_email_address ~= nill and send_from_email_address ~= nill) then
+						subject = 'Text Message from: ' .. from .. '[' .. outbound_caller_id_number .. ']';
+						emailbody = 'To: ' .. to .. '<br>Msg:' .. body;
+						if (debug["info"]) then
+							freeswitch.consoleLog("info", emailbody);
+						end
+						--luarun email.lua send_to_email_address send_from_email_address '' subject emailbody;
+						--replace the &#39 with a single quote
+							emailbody = emailbody:gsub("&#39;", "'");
+
+						--replace the &#34 with double quote
+							emailbody = emailbody:gsub("&#34;", [["]]);
+
+						--send the email
+							freeswitch.email(send_to_email_address,
+								send_from_email_address,
+								"To: "..send_to_email_address.."\nFrom: "..send_from_email_address.."\nX-Headers: \nSubject: "..subject,
+								emailbody
+								);
+					end
+				end 
+			else
+				freeswitch.consoleLog("notice", "[sms] Email has alraedy been sent, no need to do anything");
+			end
+		
 		else
 			-- XML content
 			freeswitch.consoleLog("notice", "[sms] Body contains XML content and/or is message delivery notification, not sending\n");

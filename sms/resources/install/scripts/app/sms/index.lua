@@ -801,6 +801,7 @@
 
 					if (send_to_email_address ~= nil and send_from_email_address ~= nil) then
 						subject = 'Text Message from: ' .. from .. '[' .. outbound_caller_id_number .. ']';
+						body = urldecode2(body);
 						emailbody = 'To: ' .. to .. '<br>Msg:' .. body;
 						if (debug["info"]) then
 							freeswitch.consoleLog("info", emailbody);

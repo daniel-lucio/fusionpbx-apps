@@ -81,7 +81,7 @@
 	end
 
 	local function urlencode2 (str)
-	   str = string.gsub (str, "([^0-9a-zA-Z !'()*._~-])", -- locale independent
+	   str = string.gsub (str, "([^0-9a-zA-Z !*._~-])", -- locale independent
 	      function (c) return string.format ("%%%02X", string.byte(c)) end)
 	   str = string.gsub (str, " ", "+")
 	   return str
@@ -481,9 +481,9 @@
 			for i,v in ipairs(database_hostnames) do
 --				local url = http_protocol.."://"..v..project_path..'/app/sms/hook/sms_hook_internal.php';
 				local url = "https://"..v..project_path..'/app/sms/hook/sms_hook_internal.php';
-				local payload = {from=from, to=original_to, body=body};	-- we use to to find the right server, but we need to pass the original destination tho
+				local payload = {from=from, to=original_to, body=urlencode2(body)};	-- we use to to find the right server, but we need to pass the original destination tho
 				local json_payload = json.encode(payload);
-				local sms_cmd = "curl -k -H \"Content-Type: application/json\" -X POST -d '"..json_payload.."' "..url;
+				local sms_cmd = "curl -k -H \"Content-Type: application/json\" -X POST -d \""..json_payload.."\" "..url;
 				freeswitch.consoleLog("notice", "[sms] url: "..url);
 				freeswitch.consoleLog("notice", "[sms] json_payload: "..json_payload);
 				freeswitch.consoleLog("notice", "[sms] sms_cmd: "..sms_cmd);

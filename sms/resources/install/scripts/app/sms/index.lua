@@ -526,7 +526,7 @@
 		if (debug["info"]) then
 			freeswitch.consoleLog("notice", "[sms] BODY-raw: " .. body .. "\n");
 		end
-		mailsent = argv[6];
+		mailsent = argv[6] or 0;
 		final = argv[7] or 0;
 		--Clean body up for Groundwire send
 		smsraw = body;

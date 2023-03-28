@@ -483,7 +483,7 @@
 				local url = "https://"..v..project_path..'/app/sms/hook/sms_hook_internal.php';
 				local payload = {from=from, to=original_to, body=urlencode2(body)};	-- we use to to find the right server, but we need to pass the original destination tho
 				local json_payload = json.encode(payload);
-				local sms_cmd = "curl -k -H \"Content-Type: application/json\" -X POST -d \""..json_payload.."\" "..url;
+				local sms_cmd = "curl -k -H \"Content-Type: application/json\" -X POST -d '"..json_payload.."' "..url;
 				freeswitch.consoleLog("notice", "[sms] url: "..url);
 				freeswitch.consoleLog("notice", "[sms] json_payload: "..json_payload);
 				freeswitch.consoleLog("notice", "[sms] sms_cmd: "..sms_cmd);

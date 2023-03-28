@@ -127,7 +127,8 @@ if (!function_exists('check_acl')){
 
 if (check_acl()) {
 	if  ($_SERVER['CONTENT_TYPE'] == 'application/json') {
-		$data = json_decode(file_get_contents("php://input"));
+		$rawdata = file_get_contents("php://input");
+		$data = json_decode($rawdata);
 		if ($debug) {
 			error_log('[SMS] REQUEST: ' .  print_r($data, true));
 		}

@@ -224,7 +224,7 @@
 		to = argv[3];
 		from = argv[4];
 		body = argv[5];
-		mailsent = tonumber(argv[6]);
+		mailsent = tonumber(argv[6]) or 0;
 		final = tonumber(argv[7]) or 0;
 		original_to = argv[8] or '';
 	
@@ -412,7 +412,7 @@
 			end
 			to = extension;
 
-			if (not mailsent == 1) then
+			if (mailsent == 0) then
 				--Send inbound SMS via email delivery 
 				-- This is legacy code retained for backwards compatibility.  See /var/www/fusionpbx/app/sms/sms_email.php for current.
 				if (domain_uuid == nil) then
@@ -431,14 +431,18 @@
 						end
 				end
 				if (domain_uuid == nil) then
-					freeswitch.consoleLog("notice", "[sms] domain_uuid is nill, cannot send sms to email.");
+					freeswitch.consoleLog("notice", "[sms] domain_uuid is nil, cannot send sms to email.");
 				else
-					sql = "SELECT v_contact_emails.email_address ";
-					sql = sql .. "from v_extensions, v_extension_users, v_users, v_contact_emails ";
-					sql = sql .. "where v_extensions.extension = :toext and v_extensions.domain_uuid = :domain_uuid and v_extensions.extension_uuid = v_extension_users.extension_uuid ";
-					sql = sql .. "and v_extension_users.user_uuid = v_users.user_uuid and v_users.contact_uuid = v_contact_emails.contact_uuid ";
-					sql = sql .. "and (v_contact_emails.email_label = 'sms' or v_contact_emails.email_label = 'SMS')";
-					local params = {toext = extension, domain_uuid = domain_uuid}
+--					sql = "SELECT v_contact_emails.email_address ";
+--					sql = sql .. "from v_extensions, v_extension_users, v_users, v_contact_emails ";
+--					sql = sql .. "where v_extensions.extension = :toext and v_extensions.domain_uuid = :domain_uuid and v_extensions.extension_uuid = v_extension_users.extension_uuid ";
+--					sql = sql .. "and v_extension_users.user_uuid = v_users.user_uuid and v_users.contact_uuid = v_contact_emails.contact_uuid ";
+--					sql = sql .. "and (v_contact_emails.email_label = 'sms' or v_contact_emails.email_label = 'SMS')";
+				
+					toext2 = string.match(original_to,'%d+');
+					sql = "SELECT email as email_address FROM v_sms_destinations WHERE (destination = :toext OR destination = :toext2) and domain_uuid = :domain_uuid";
+			
+					local params = {toext = extension, domain_uuid = domain_uuid, toext2 = toext2}
 
 					if (debug["sql"]) then
 						freeswitch.consoleLog("notice", "[sms] SQL: "..sql.."; params:" .. json.encode(params) .. "\n");
@@ -449,7 +453,7 @@
 
 					send_from_email_address = 'noreply@example.com'  -- this gets overridden if using v_mailto.php
 
-					if (send_to_email_address ~= nill and send_from_email_address ~= nill) then
+					if (send_to_email_address ~= nil and send_from_email_address ~= nil) then
 						subject = 'Text Message from: ' .. from;
 						emailbody = 'To: ' .. to .. '<br>Msg:' .. body;
 						if (debug["info"]) then
@@ -764,7 +768,7 @@
 						end
 				end
 				if (domain_uuid == nil) then
-					freeswitch.consoleLog("notice", "[sms] domain_uuid is nill, cannot send sms to email.");
+					freeswitch.consoleLog("notice", "[sms] domain_uuid is nil, cannot send sms to email.");
 				else
 					sql = "SELECT v_contact_emails.email_address ";
 					sql = sql .. "from v_extensions, v_extension_users, v_users, v_contact_emails ";
@@ -781,7 +785,7 @@
 					end);
 
 
-					if (send_to_email_address == nill) then
+					if (send_to_email_address == nil) then
 						sql = "select email from v_sms_destinations where domain_uuid = :domain_uuid AND destination = :outbound_caller_id_number";
 						local params = {outbound_caller_id_number = outbound_caller_id_number, domain_uuid = domain_uuid}
 						if (debug["sql"]) then
@@ -795,7 +799,7 @@
 
 					send_from_email_address = 'noreply@example.com'  -- this gets overridden if using v_mailto.php
 
-					if (send_to_email_address ~= nill and send_from_email_address ~= nill) then
+					if (send_to_email_address ~= nil and send_from_email_address ~= nil) then
 						subject = 'Text Message from: ' .. from .. '[' .. outbound_caller_id_number .. ']';
 						emailbody = 'To: ' .. to .. '<br>Msg:' .. body;
 						if (debug["info"]) then

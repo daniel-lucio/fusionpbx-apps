@@ -487,9 +487,7 @@
 				freeswitch.consoleLog("notice", "[sms] url: "..url);
 				freeswitch.consoleLog("notice", "[sms] json_payload: "..json_payload);
 				freeswitch.consoleLog("notice", "[sms] sms_cmd: "..sms_cmd);
-				local handle = io.popen(sms_cmd)
-				local result = handle:read("*a")
-				handle:close()
+				local result = api:executeString("system "..sms_cmd);
 				if (debug["info"]) then
 					freeswitch.consoleLog("notice", "[sms] CURL Returns: " .. result .. "\n");
 				end
@@ -739,9 +737,7 @@
 			if (debug["info"]) then
 				freeswitch.consoleLog("notice", "[sms] CMD: " .. cmd .. "\n");
 			end
-			local handle = io.popen(cmd);
-			local result = handle:read("*a");
-			handle:close();
+			local result = api:executeString("system "..cmd);
 			final = 1;
 			if (debug["info"]) then
 				freeswitch.consoleLog("notice", "[sms] CURL Returns: " .. result .. "\n");

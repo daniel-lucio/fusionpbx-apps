@@ -11,7 +11,6 @@ debug["sql"] = true;
 api = freeswitch.API();
 
 --include json library
-local json
 if (debug["sql"]) then
     json = require "resources.functions.lunajson"
 end

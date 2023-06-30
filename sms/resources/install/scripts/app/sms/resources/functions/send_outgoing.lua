@@ -76,6 +76,8 @@ function send_outgoing(sms_message_uuid)
             -- No XML content, continue processing
             to = to_number;
             outbound_caller_id_number = string.match(from_number,'%d+');
+            body = message;
+            
             if (domain_uuid ~= nil) then
                     sql = "SELECT outbound_caller_id_number FROM v_extensions WHERE extension = :from_number and domain_uuid = :domain_uuid";
                     local params = {from_number = from_number, domain_uuid = domain_uuid};

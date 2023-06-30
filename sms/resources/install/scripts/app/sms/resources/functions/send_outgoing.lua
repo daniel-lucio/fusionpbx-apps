@@ -1,6 +1,12 @@
 local Database = require "resources.functions.database"
 --local Settings = require "resources.functions.lazy_settings"
 
+local function urldecode2 (str)
+   str = string.gsub (str, "+", " ")
+   str = string.gsub (str, "%%(%x%x)", function(h) return string.char(tonumber(h,16)) end)
+   return str
+end
+
 function send_outgoing(sms_message_uuid)
     local dbh = Database.new('system');
   
@@ -76,7 +82,7 @@ function send_outgoing(sms_message_uuid)
             -- No XML content, continue processing
             to = to_number;
             outbound_caller_id_number = string.match(from_number,'%d+');
-            body = message;
+            body = urldecode2(message);
             
             if (domain_uuid ~= nil) then
                     sql = "SELECT outbound_caller_id_number FROM v_extensions WHERE extension = :from_number and domain_uuid = :domain_uuid";

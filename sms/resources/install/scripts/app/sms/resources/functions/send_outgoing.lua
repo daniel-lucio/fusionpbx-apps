@@ -32,30 +32,30 @@ function send_outgoing(sms_message_uuid)
         freeswitch.consoleLog("notice", "[send-outgoing]  getting settings for " .. domain_uuid .. "\n");
         settings = settings(domain_uuid);	-- TODO: find a fix attempt to call global 'settings' (a table value)
     
-        if (dsettings['sms'] ~= nil) then
-            if (dsettings['sms'][carrier..'_access_key'] ~= nil) then
-                if (dsettings['sms'][carrier..'_access_key']['text'] ~= nil) then
-                    access_key = dsettings['sms'][carrier..'_access_key']['text']
+        if (settings['sms'] ~= nil) then
+            if (settings['sms'][carrier..'_access_key'] ~= nil) then
+                if (settings['sms'][carrier..'_access_key']['text'] ~= nil) then
+                    access_key = settings['sms'][carrier..'_access_key']['text']
                 end
             end
-            if (dsettings['sms'][carrier..'_secret_key'] ~= nil) then
-                if (dsettings['sms'][carrier..'_secret_key']['text'] ~= nil) then
-                    secret_key = dsettings['sms'][carrier..'_secret_key']['text']
+            if (settings['sms'][carrier..'_secret_key'] ~= nil) then
+                if (settings['sms'][carrier..'_secret_key']['text'] ~= nil) then
+                    secret_key = settings['sms'][carrier..'_secret_key']['text']
                 end
             end
-            if (dsettings['sms'][carrier..'_api_url'] ~= nil) then
-                if (dsettings['sms'][carrier..'_api_url']['text'] ~= nil) then
-                    api_url = dsettings['sms'][carrier..'_api_url']['text']
+            if (settings['sms'][carrier..'_api_url'] ~= nil) then
+                if (settings['sms'][carrier..'_api_url']['text'] ~= nil) then
+                    api_url = settings['sms'][carrier..'_api_url']['text']
                 end
             end
-            if (dsettings['sms'][carrier..'_username'] ~= nil) then
-                if (dsettings['sms'][carrier..'_username']['text'] ~= nil) then
-                    username = dsettings['sms'][carrier..'_username']['text']
+            if (settings['sms'][carrier..'_username'] ~= nil) then
+                if (settings['sms'][carrier..'_username']['text'] ~= nil) then
+                    username = settings['sms'][carrier..'_username']['text']
                 end
             end
-            if (dsettings['sms'][carrier..'_delivery_status_webhook_url'] ~= nil) then
-                if (dsettings['sms'][carrier..'_delivery_status_webhook_url']['text'] ~= nil) then
-                    delivery_status_webhook_url = dsettings['sms'][carrier..'_delivery_status_webhook_url']['text']
+            if (settings['sms'][carrier..'_delivery_status_webhook_url'] ~= nil) then
+                if (settings['sms'][carrier..'_delivery_status_webhook_url']['text'] ~= nil) then
+                    delivery_status_webhook_url = settings['sms'][carrier..'_delivery_status_webhook_url']['text']
                 end
             end
 

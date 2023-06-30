@@ -1,5 +1,5 @@
-local Database = require "resources.functions.database"
-local Settings = require "resources.functions.lazy_settings"
+--local Database = require "resources.functions.database"
+--local Settings = require "resources.functions.lazy_settings"
 
 function send_outgoing(sms_message_uuid)
     local dbh = Database.new('system');

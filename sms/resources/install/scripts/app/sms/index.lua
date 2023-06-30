@@ -625,6 +625,7 @@
 			return;
 		end
 		if (settings['sms'] ~= nil) then
+			outbound_delivery_method = settings['sms']['outbound_delivery_method']['text'] or 'direct';
 			if (settings['sms'][carrier..'_access_key'] ~= nil) then
 				if (settings['sms'][carrier..'_access_key']['text'] ~= nil) then
 					access_key = settings['sms'][carrier..'_access_key']['text']
@@ -657,9 +658,8 @@
 			if (api_url ~= nil) then freeswitch.consoleLog("notice", "[sms] api_url: " .. api_url .. "\n") end;
 			if (username ~= nil) then freeswitch.consoleLog("notice", "[sms] username: " .. username .. "\n") end;
 			if (delivery_status_webhook_url ~= nil) then freeswitch.consoleLog("notice", "[sms] delivery_status_webhook_url: " .. delivery_status_webhook_url .. "\n") end;
+			if (outbound_delivery_method ~= nil) then  freeswitch.consoleLog("notice", "[sms] outbound_delivery_method: " .. outbound_delivery_method .. "\n") end;
 		end
-		
-			
 
 		--Check for xml content or delivery status notification type
 		smstempst, smstempend = string.find(body, '<%?xml');
@@ -737,12 +737,15 @@
 			if (debug["info"]) then
 				freeswitch.consoleLog("notice", "[sms] CMD: " .. cmd .. "\n");
 			end
-			local result = api:executeString("system "..cmd);
 			final = 1;
-			if (debug["info"]) then
-				freeswitch.consoleLog("notice", "[sms] CURL Returns: " .. result .. "\n");
+			if (outbound_delivery_method == nil or outbound_delivery_method == 'direct') then
+				local result = api:executeString("system "..cmd);
+			
+				if (debug["info"]) then
+					freeswitch.consoleLog("notice", "[sms] CURL Returns: " .. result .. "\n");
+				end
+				deliver_stamp = os.date("%Y-%m-%d %H:%M:%S");
 			end
-			deliver_stamp = os.date("%Y-%m-%d %H:%M:%S");
 		
 			if (mailsent == 0) then
 				freeswitch.consoleLog("notice", "[sms] Looks like email hasn't been sent");

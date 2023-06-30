@@ -1,4 +1,4 @@
-requires "app.sms.resources.functions.send_outgoing";
+require "app.sms.resources.functions.send_outgoing";
 
 sms_message_uuid = argv[1];
 if (debug["info"]) then

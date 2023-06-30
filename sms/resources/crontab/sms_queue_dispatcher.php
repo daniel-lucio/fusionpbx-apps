@@ -40,6 +40,6 @@ while ($sms = $result->fetch(PDO::FETCH_NAMED)){
 		echo '/////////////////////////////////////////'.PHP_EOL;
 		print_r($sms);
 	}
-	$switch_cmd = 'api luarun queue_distpacher.lua '.$sms['sms_message_uuid'];
+	$switch_cmd = 'api luarun sms_queue_distpacher.lua '.$sms['sms_message_uuid'];
 	$result2 = trim(event_socket_request($fp, $switch_cmd));
 }

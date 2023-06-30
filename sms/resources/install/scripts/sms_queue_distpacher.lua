@@ -1,6 +1,20 @@
 require "app.sms.resources.functions.send_outgoing";
+--connect to the database
 local Database = require "resources.functions.database";
 dbh = Database.new('system');
+
+--debug
+debug["info"] = true;
+debug["sql"] = true;
+
+--set the api
+api = freeswitch.API();
+
+--include json library
+local json
+if (debug["sql"]) then
+    json = require "resources.functions.lunajson"
+end
 
 sms_message_uuid = argv[1];
 if (debug["info"]) then

@@ -176,19 +176,19 @@ function send_outgoing(sms_message_uuid)
                 cmd ="curl \"" .. api_url .. "?password=" .. secret_key .. "&username=" .. username .. "&to=" .. to .. "&from=" .. outbound_caller_id_number .. "&coding=0&text=" .. body .. "\"";
             end
             if (debug["info"]) then
-                freeswitch.consoleLog("notice", "[sms] CMD: " .. cmd .. "\n");
+                freeswitch.consoleLog("notice", "[send-outgoing] CMD: " .. cmd .. "\n");
             end
             local result = api:executeString("system "..cmd);
             final = 1;
             if (debug["info"]) then
-                freeswitch.consoleLog("notice", "[sms] CURL Returns: " .. result .. "\n");
+                freeswitch.consoleLog("notice", "[send-outgoing] CURL Returns: " .. result .. "\n");
             end
             deliver_stamp = os.date("%Y-%m-%d %H:%M:%S");
 
-            local ql = [[UPDATE v_sms_messages SET deliver_stamp = :deliver_stamp WHERE  sms_message_uuid = :sms_message_uuid]];
+            local sql = [[UPDATE v_sms_messages SET deliver_stamp = :deliver_stamp WHERE  sms_message_uuid = :sms_message_uuid]];
             local params = {deliver_stamp = deliver_stamp, sms_message_uuid = sms_message_uuid};
              if (debug["sql"]) then
-                     freeswitch.consoleLog("notice", "[sms] SQL: "..sql.."; params:" .. json.encode(params) .. "\n");
+                     freeswitch.consoleLog("notice", "[send-outgoing] SQL: "..sql.."; params:" .. json.encode(params) .. "\n");
              end
              dbh:query(sql,params);
         end

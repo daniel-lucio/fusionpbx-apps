@@ -30,11 +30,8 @@ function send_outgoing(sms_message_uuid)
         freeswitch.consoleLog("notice", "[send-outgoing]  " .. sms_message_uuid .. " found \n");
     
         require "resources.functions.settings";
-        if (type(settings) ~= 'table') then
-            settings = settings(domain_uuid);	-- TODO: find a fix attempt to call global 'settings' (a table value)
-        else
-            return;
-        end
+        freeswitch.consoleLog("notice", "[send-outgoing]  getting settings for " .. domain_uuid .. "\n");
+        local settings = settings(domain_uuid);	-- TODO: find a fix attempt to call global 'settings' (a table value)
     
         if (settings['sms'] ~= nil) then
             if (settings['sms'][carrier..'_access_key'] ~= nil) then

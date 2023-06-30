@@ -2,14 +2,14 @@ local Database = require "resources.functions.database"
 local Settings = require "resources.functions.lazy_settings"
 
 function send_outgoing(sms_message_uuid)
-    local dbh = dbh or Database.new('system');
+    local dbh = Database.new('system');
     local settings = Settings.new(db, domain_name, domain_uuid);
   
     local sql = [[SELECT * FROM v_sms_messages WHERE direction = 'outbound' AND sms_message_uuid = :sms_message_uuid]];
     local params = {sms_message_uuid = sms_message_uuid};
   
     if (debug["sql"]) then
-        freeswitch.consoleLog("notice", "[voicemail] SQL: " .. sql .. "; params:" .. json.encode(params) .. "\n");
+        freeswitch.consoleLog("notice", "[send-outgoing] SQL: " .. sql .. "; params:" .. json.encode(params) .. "\n");
     end
   
     dbh:query(sql, params, function(row)
@@ -27,6 +27,7 @@ function send_outgoing(sms_message_uuid)
   
     if (message ~= nil) then
         -- record found
+        freeswitch.consoleLog("notice", "[send-outgoing]  " .. sms_message_uuid .. " found \n");
     
         require "resources.functions.settings";
         if (type(settings) ~= 'table') then

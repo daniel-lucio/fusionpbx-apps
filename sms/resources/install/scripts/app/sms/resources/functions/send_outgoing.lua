@@ -2,7 +2,7 @@ local Database = require "resources.functions.database"
 local Settings = require "resources.functions.lazy_settings"
 
 function send_outgoing(sms_message_uuid)
-    local db = dbh or Database.new('system');
+    local dbh = dbh or Database.new('system');
     local settings = Settings.new(db, domain_name, domain_uuid);
   
     local sql = [[SELECT * FROM v_sms_messages WHERE direction = 'outbound' AND sms_message_uuid = :sms_message_uuid]];

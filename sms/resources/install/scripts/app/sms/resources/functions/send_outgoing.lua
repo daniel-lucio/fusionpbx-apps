@@ -1,6 +1,22 @@
 local Database = require "resources.functions.database"
 --local Settings = require "resources.functions.lazy_settings"
 
+function encodeChar(chr)
+   return string.format("%%%X",string.byte(chr))
+end
+
+function encodeString(str)
+   local output, t = string.gsub(str,"[^%w]",encodeChar)
+   return output
+end
+
+local function urlencode2 (str)
+   str = string.gsub (str, "([^0-9a-zA-Z !*._~-])", -- locale independent
+      function (c) return string.format ("%%%02X", string.byte(c)) end)
+   str = string.gsub (str, " ", "+")
+   return str
+end
+
 local function urldecode2 (str)
    str = string.gsub (str, "+", " ")
    str = string.gsub (str, "%%(%x%x)", function(h) return string.char(tonumber(h,16)) end)
@@ -82,7 +98,7 @@ function send_outgoing(sms_message_uuid)
             -- No XML content, continue processing
             to = to_number;
             outbound_caller_id_number = string.match(from_number,'%d+');
-            body = urldecode2(message);
+            body = encodeString(message);
             
             if (domain_uuid ~= nil) then
                     sql = "SELECT outbound_caller_id_number FROM v_extensions WHERE extension = :from_number and domain_uuid = :domain_uuid";

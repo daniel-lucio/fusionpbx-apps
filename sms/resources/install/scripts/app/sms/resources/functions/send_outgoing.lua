@@ -74,6 +74,21 @@ function send_outgoing(sms_message_uuid)
     
         if (not mdn) then 
             -- No XML content, continue processing
+            to = to_number;
+            outbound_caller_id_number = string.match(from_number,'%d+');
+            if (domain_uuid ~= nil) then
+                    sql = "SELECT outbound_caller_id_number FROM v_extensions WHERE extension = :from_number and domain_uuid = :domain_uuid";
+                    local params = {from_number = from_number, domain_uuid = domain_uuid};
+
+                    if (debug["sql"]) then
+                            freeswitch.consoleLog("notice", "[sms] SQL: "..sql.."; params:" .. json.encode(params) .. "\n");
+                    end
+                    status = dbh:query(sql, params, function(rows)
+                            outbound_caller_id_number = rows["outbound_caller_id_number"];
+                    end);
+            end
+
+            
             if (carrier == "flowroute") then
                 cmd = "curl -u ".. access_key ..":" .. secret_key .. " -H \"Content-Type: application/json\" -X POST -d '{\"to\":\"" .. to .. "\",\"from\":\"" .. outbound_caller_id_number .."\",\"body\":\"" .. body .. "\"}' " .. api_url;
             elseif (carrier == "peerless") then	

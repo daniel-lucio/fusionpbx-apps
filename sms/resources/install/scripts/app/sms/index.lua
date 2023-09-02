@@ -578,6 +578,7 @@
 		freeswitch.consoleLog("notice", "[sms] DOMAIN_UUID: " .. domain_uuid .. "\n");
 
 		if (outbound_caller_id_number == nil) then
+			freeswitch.consoleLog("notice", "[sms] outbound_caller_id_number: is nil\n");
 			--get the outbound_caller_id_number using the domain_uuid and the extension number
 				if (domain_uuid ~= nil) then
 					sql = "SELECT outbound_caller_id_number, extension_uuid, carrier FROM v_extensions ";
@@ -598,6 +599,7 @@
 					end);
 				end
 		elseif (outbound_caller_id_number ~= nil) then
+			freeswitch.consoleLog("notice", "[sms] outbound_caller_id_number: is " .. outbound_caller_id_number .. "\n");
 			--get the outbound_caller_id_number using the domain_uuid and the extension number
 				if (domain_uuid ~= nil) then
 					sql = "SELECT extension_uuid, carrier FROM  ";
@@ -630,8 +632,7 @@
 					outbound_delivery_method = settings['sms']['outbound_delivery_method']['text'] or 'direct';
 				end
 			end
-			if (settings['sms'][carrier..'_access_key'] ~= nil) then
-				if (settings['sms'][carrier..'_access_key']['text'] ~= nil) then
+f				if (settings['sms'][carrier..'_access_key']['text'] ~= nil) then
 					access_key = settings['sms'][carrier..'_access_key']['text']
 				end
 			end

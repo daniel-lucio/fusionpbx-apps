@@ -29,6 +29,7 @@
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 	require_once "resources/paging.php";
+	require_once "resources/functions/order_by.php";
 
 //check permissions
 	if (permission_exists('call_broadcast_view')) {

@@ -171,7 +171,7 @@
 				echo "<a href='sms_broadcast_edit.php?id=".$row['sms_broadcast_uuid']."' alt='".$text['button-edit']."'>$v_link_label_edit</a>";
 			}
 			if (permission_exists('sms_delete')) {
-				echo "<a href='sms_broadcast_delete.php?id=".$row['sms_broadcast_uuid']."' alt='".$text['button-delete']."' onclick=\"return confirm('".$text['confirm-delete']."')\">$v_link_label_delete</a>";
+				echo "<a href='sms_broadcast_delete.php?id[]=".$row['sms_broadcast_uuid']."' alt='".$text['button-delete']."' onclick=\"return confirm('".$text['confirm-delete']."')\">$v_link_label_delete</a>";
 			}
 			echo "</td>\n";
 			echo "</tr>\n";
@@ -183,10 +183,10 @@
 	if (is_array($result)) {
 		echo "<tr>\n";
 		echo "	<td colspan='20' class='list_control_icons'>\n";
-		if (permission_exists('sms_add')) {
+		if (permission_exists('sms_broadcast_add')) {
 				echo "<a href='sms_broadcast_edit.php' alt='".$text['button-add']."'>".$v_link_label_add."</a>";
 		}
-		if (permission_exists('sms_delete')) {
+		if (permission_exists('sms_broadcast_delete')) {
 			echo "<a href='javascript:void(0);' onclick=\"if (confirm('".$text['confirm-delete']."')) { document.forms.frm.submit(); }\" alt='".$text['button-delete']."'>".$v_link_label_delete."</a>";
 		}
 		echo "	</td>\n";

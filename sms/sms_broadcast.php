@@ -31,6 +31,7 @@
 	require_once "resources/paging.php";
 	require_once "resources/functions/order_by.php";
 	require_once "resources/functions/limit_offset.php";
+	require_once 'resources/functions/version.php';
 
 //check permissions
 	if (permission_exists('call_broadcast_view')) {
@@ -104,11 +105,13 @@
 	if (permission_exists('sms_broadcast_add')) {
 		echo button::create(['type'=>'button','label'=>$text['button-add'],'icon'=>$_SESSION['theme']['button_icon_add'],'id'=>'btn_add','link'=>'sms_broadcast_edit.php']);
 	}
-	if (permission_exists('sms_broadcast_add') && $result) {
-		echo button::create(['type'=>'button','label'=>$text['button-copy'],'icon'=>$_SESSION['theme']['button_icon_copy'],'name'=>'btn_copy','onclick'=>"modal_open('modal-copy','btn_copy');"]);
-	}
-	if (permission_exists('sms_broadcast_delete') && $result) {
-		echo button::create(['type'=>'button','label'=>$text['button-delete'],'icon'=>$_SESSION['theme']['button_icon_delete'],'name'=>'btn_delete','onclick'=>"modal_open('modal-delete','btn_delete');"]);
+	if (numeric_version() > 40400){
+		if (permission_exists('sms_broadcast_add') && $result) {
+			echo button::create(['type'=>'button','label'=>$text['button-copy'],'icon'=>$_SESSION['theme']['button_icon_copy'],'name'=>'btn_copy','onclick'=>"modal_open('modal-copy','btn_copy');"]);
+		}
+		if (permission_exists('sms_broadcast_delete') && $result) {
+			echo button::create(['type'=>'button','label'=>$text['button-delete'],'icon'=>$_SESSION['theme']['button_icon_delete'],'name'=>'btn_delete','onclick'=>"modal_open('modal-delete','btn_delete');"]);
+		}
 	}
 	echo 		"<form id='form_search' class='inline' method='get'>\n";
 	echo 		"<input type='text' class='txt list-search' name='search' id='search' value=\"".escape($search)."\" placeholder=\"".$text['label-search']."\" onkeydown='list_search_reset();'>";

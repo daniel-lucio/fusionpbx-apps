@@ -135,8 +135,6 @@
 		echo "<th style='width: 30px; text-align: center; padding: 0px;'><input type='checkbox' id='chk_all' onchange=\"(this.checked) ? check('all') : check('none');\"></th>";
 	}
 	echo th_order_by('destination', $text['label-destination'], $order_by, $order);
-	echo th_order_by('carrier', $text['label-carrier'], $order_by, $order);
-	echo th_order_by('enabled', $text['label-enabled'], $order_by, $order);
 	echo th_order_by('description', $text['label-description'], $order_by, $order);
 	echo "<td class='list_control_icon'>\n";
 	if (permission_exists('sms_broadcast_add')) {
@@ -161,15 +159,13 @@
 			}
 			echo "	<td valign='top' class='".$row_style[$c]."'>";
 			if (permission_exists('sms_broadcast_edit')) {
-				echo "<a href='sms_broadcast_edit.php?id=".$row['sms_broadcast_uuid']."'>".$row['destination']."</a>";
+				echo "<a href='sms_broadcast_edit.php?id=".$row['sms_broadcast_uuid']."'>".$row['sms_broadcast_name']."</a>";
 			}
 			else {
-				echo $row['destination'];
+				echo $row['sms_broadcast_name'];
 			}
 			echo "</td>\n";
-			echo "	<td valign='top' class='".$row_style[$c]."'>".$row['carrier']."</td>\n";
-			echo "	<td valign='top' class='".$row_style[$c]."'>".ucwords($row['enabled'])."</td>\n";
-			echo "	<td valign='top' class='row_stylebg' width='30%'>".$row['description']."&nbsp;</td>\n";
+			echo "	<td valign='top' class='row_stylebg' width='30%'>".$row['sms_broadcast_description']."&nbsp;</td>\n";
 			echo "	<td class='list_control_icons'>";
 			if (permission_exists('sms_edit')) {
 				echo "<a href='sms_edit.php?id=".$row['sms_destination_uuid']."' alt='".$text['button-edit']."'>$v_link_label_edit</a>";

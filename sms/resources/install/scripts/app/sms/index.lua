@@ -625,7 +625,11 @@
 			return;
 		end
 		if (settings['sms'] ~= nil) then
-			outbound_delivery_method = settings['sms']['outbound_delivery_method']['text'] or 'direct';
+			if (settings['sms']['outbound_delivery_method'] ~= nil) then
+				if (settings['sms']['outbound_delivery_method']['text'] ~= nil) then
+					outbound_delivery_method = settings['sms']['outbound_delivery_method']['text'] or 'direct';
+				end
+			end
 			if (settings['sms'][carrier..'_access_key'] ~= nil) then
 				if (settings['sms'][carrier..'_access_key']['text'] ~= nil) then
 					access_key = settings['sms'][carrier..'_access_key']['text']

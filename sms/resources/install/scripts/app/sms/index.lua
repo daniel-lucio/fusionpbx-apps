@@ -633,7 +633,7 @@
 					outbound_delivery_method = settings['sms']['outbound_delivery_method']['text'] or 'direct';
 				end
 			end
-			if (settings['sms'][carrier..'_access_key']['text'] ~= nil) then
+			if (settings['sms'][carrier..'_access_key'] ~= nil) then
 				access_key = settings['sms'][carrier..'_access_key']['text']
 			end
 			if (settings['sms'][carrier..'_secret_key'] ~= nil) then

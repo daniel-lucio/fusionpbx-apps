@@ -98,6 +98,109 @@
 	$document['title'] = $text['title-call_broadcast'];
 	require_once "resources/header.php";	
 
+
+//
+//show the content
+	echo "<table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n";
+	echo "  <tr>\n";
+	echo "	<td align='left' width='100%'><b>".$text['header-sms']." (".$total_sms_destinations.")</b><br>\n";
+	echo "		".$text['description-sms']."\n";
+	echo "	</td>\n";
+	echo "		<form method='get' action=''>\n";
+	echo "			<td style='vertical-align: top; text-align: right; white-space: nowrap;'>\n";
+	if (if_group("superadmin")) {
+		echo "				<input type='button' class='btn' style='margin-right: 15px;' value='".$text['button-mdr']."' onclick=\"window.location.href='sms_mdr.php'\">\n";
+	}
+		echo "				<input type='button' class='btn' style='margin-right: 15px;' value='".$text['button-broadcast']."' onclick=\"window.location.href='sms_broadcast.php'\">\n";
+
+	echo "				<input type='text' class='txt' style='width: 150px' name='search' id='search' value='".$search."'>";
+	echo "				<input type='submit' class='btn' name='submit' value='".$text['button-search']."'>";
+	if ($paging_controls_mini != '') {
+		echo 			"<span style='margin-left: 15px;'>".$paging_controls_mini."</span>\n";
+	}
+	echo "			</td>\n";
+	echo "		</form>\n";
+	echo "  </tr>\n";
+	echo "</table>\n";
+	echo "<br />";
+
+	$c = 0;
+	$row_style["0"] = "row_style0";
+	$row_style["1"] = "row_style1";
+
+	echo "<form name='frm' method='post' action='sms_delete.php'>\n";
+	echo "<table class='tr_hover' width='100%' border='0' cellpadding='0' cellspacing='0'>\n";
+	echo "<tr>\n";
+	if (permission_exists('sms_delete') && is_array($sms_destinations)) {
+		echo "<th style='width: 30px; text-align: center; padding: 0px;'><input type='checkbox' id='chk_all' onchange=\"(this.checked) ? check('all') : check('none');\"></th>";
+	}
+	echo th_order_by('destination', $text['label-destination'], $order_by, $order);
+	echo th_order_by('carrier', $text['label-carrier'], $order_by, $order);
+	echo th_order_by('enabled', $text['label-enabled'], $order_by, $order);
+	echo th_order_by('description', $text['label-description'], $order_by, $order);
+	echo "<td class='list_control_icon'>\n";
+	if (permission_exists('sms_add')) {
+			echo "<a href='sms_edit.php' alt='".$text['button-add']."'>".$v_link_label_add."</a>";
+	}
+	if (permission_exists('sms_delete') && is_array($sms_destinations)) {
+		echo "<a href='javascript:void(0);' onclick=\"if (confirm('".$text['confirm-delete']."')) { document.forms.frm.submit(); }\" alt='".$text['button-delete']."'>".$v_link_label_delete."</a>";
+	}
+	echo "</td>\n";
+	echo "</tr>\n";
+
+	if (is_array($sms_destinations)) {
+
+		foreach($sms_destinations as $row) {
+			$tr_link = (permission_exists('sms_edit')) ? " href='sms_edit.php?id=".$row['sms_destination_uuid']."'" : null;
+			echo "<tr ".$tr_link.">\n";
+			if (permission_exists('sms_delete')) {
+				echo "	<td valign='top' class='".$row_style[$c]." tr_link_void' style='text-align: center; vertical-align: middle; padding: 0px;'>";
+				echo "		<input type='checkbox' name='id[]' id='checkbox_".$row['sms_destination_uuid']."' value='".$row['sms_destination_uuid']."' onclick=\"if (!this.checked) { document.getElementById('chk_all').checked = false; }\">";
+				echo "	</td>";
+				$ext_ids[] = 'checkbox_'.$row['sms_destination_uuid'];
+			}
+			echo "	<td valign='top' class='".$row_style[$c]."'>";
+			if (permission_exists('sms_edit')) {
+				echo "<a href='sms_edit.php?id=".$row['sms_destination_uuid']."'>".$row['destination']."</a>";
+			}
+			else {
+				echo $row['destination'];
+			}
+			echo "</td>\n";
+			echo "	<td valign='top' class='".$row_style[$c]."'>".$row['carrier']."</td>\n";
+			echo "	<td valign='top' class='".$row_style[$c]."'>".ucwords($row['enabled'])."</td>\n";
+			echo "	<td valign='top' class='row_stylebg' width='30%'>".$row['description']."&nbsp;</td>\n";
+			echo "	<td class='list_control_icons'>";
+			if (permission_exists('sms_edit')) {
+				echo "<a href='sms_edit.php?id=".$row['sms_destination_uuid']."' alt='".$text['button-edit']."'>$v_link_label_edit</a>";
+			}
+			if (permission_exists('sms_delete')) {
+				echo "<a href='sms_delete.php?id[]=".$row['sms_destination_uuid']."' alt='".$text['button-delete']."' onclick=\"return confirm('".$text['confirm-delete']."')\">$v_link_label_delete</a>";
+			}
+			echo "</td>\n";
+			echo "</tr>\n";
+			$c = ($c) ? 0 : 1;
+		}
+		unset($sms_destinations, $row);
+	}
+
+	if (is_array($sms_destinations)) {
+		echo "<tr>\n";
+		echo "	<td colspan='20' class='list_control_icons'>\n";
+		if (permission_exists('sms_add')) {
+				echo "<a href='sms_edit.php' alt='".$text['button-add']."'>".$v_link_label_add."</a>";
+		}
+		if (permission_exists('sms_delete')) {
+			echo "<a href='javascript:void(0);' onclick=\"if (confirm('".$text['confirm-delete']."')) { document.forms.frm.submit(); }\" alt='".$text['button-delete']."'>".$v_link_label_delete."</a>";
+		}
+		echo "	</td>\n";
+		echo "</tr>\n";
+	}
+
+	echo "</table>";
+	echo "</form>";
+
+
 //show the content
 	echo "<div class='action_bar' id='action_bar'>\n";
 	echo "	<div class='heading'><b>".$text['title-call_broadcast']." (".$num_rows.")</b></div>\n";

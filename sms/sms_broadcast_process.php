@@ -6,7 +6,7 @@ require_once "resources/classes/text.php";
 
 $debug = true;
 
-$sql = "select * from v_sms_broadcast";
+$sql = "select * from v_sms_broadcast where sms_broadcast_uuid = '".$_GET['id']."'";
 $database = new database;
 
 $database = new database;

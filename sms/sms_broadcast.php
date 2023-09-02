@@ -167,6 +167,7 @@
 			echo "</td>\n";
 			echo "	<td valign='top' class='row_stylebg' width='30%'>".$row['sms_broadcast_description']."&nbsp;</td>\n";
 			echo "	<td class='list_control_icons'>";
+			echo "<a href='sms_broadcast_process.php?id=".$row['sms_broadcast_uuid']."' alt='".$text['button-play']."'>$v_link_label_play</a>";
 			if (permission_exists('sms_edit')) {
 				echo "<a href='sms_broadcast_edit.php?id=".$row['sms_broadcast_uuid']."' alt='".$text['button-edit']."'>$v_link_label_edit</a>";
 			}

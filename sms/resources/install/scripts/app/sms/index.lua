@@ -618,7 +618,8 @@
 					end);
 				end
 		end
-		
+
+		freeswitch.consoleLog("notice", "[sms] carrier: " .. carrier .. "\n");		
 		--get settings 
 		require "resources.functions.settings";
 		if (type(settings) ~= 'table') then

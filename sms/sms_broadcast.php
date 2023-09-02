@@ -88,8 +88,10 @@
 	unset($sql, $parameters);
 
 //create token
-	$object = new token;
-	$token = $object->create($_SERVER['PHP_SELF']);
+	 if(class_exists('token')){
+		$object = new token;
+		$token = $object->create($_SERVER['PHP_SELF']);
+	 }
 
 //include the header
 	$document['title'] = $text['title-call_broadcast'];
@@ -185,7 +187,9 @@
 	echo "<br />\n";
 	echo "<div align='center'>".$paging_controls."</div>\n";
 
-	echo "<input type='hidden' name='".$token['name']."' value='".$token['hash']."'>\n";
+	if(class_exists('token')){
+		echo "<input type='hidden' name='".$token['name']."' value='".$token['hash']."'>\n";
+	}
 
 	echo "</form>\n";
 	

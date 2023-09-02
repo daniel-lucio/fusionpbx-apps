@@ -196,7 +196,7 @@
 	echo "</table>";
 	echo "</form>";
 
-
+/**
 //show the content
 	echo "<div class='action_bar' id='action_bar'>\n";
 	echo "	<div class='heading'><b>".$text['title-call_broadcast']." (".$num_rows.")</b></div>\n";
@@ -287,6 +287,7 @@
 	unset($result);
 
 	echo "</table>\n";
+**/
 	echo "<br />\n";
 	echo "<div align='center'>".$paging_controls."</div>\n";
 

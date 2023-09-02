@@ -103,7 +103,7 @@
 //show the content
 	echo "<table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n";
 	echo "  <tr>\n";
-	echo "	<td align='left' width='100%'><b>".$text['header-call_broadcast']." (".$num_rows.")</b><br>\n";
+	echo "	<td align='left' width='100%'><b>".$text['title-call_broadcast']." (".$num_rows.")</b><br>\n";
 	echo "		".$text['description-sms']."\n";
 	echo "	</td>\n";
 	echo "		<form method='get' action=''>\n";
@@ -131,7 +131,7 @@
 	echo "<form name='frm' method='post' action='sms_delete.php'>\n";
 	echo "<table class='tr_hover' width='100%' border='0' cellpadding='0' cellspacing='0'>\n";
 	echo "<tr>\n";
-	if (permission_exists('sms_delete') && is_array($sms_destinations)) {
+	if (permission_exists('sms_broadcast_delete') && is_array($result)) {
 		echo "<th style='width: 30px; text-align: center; padding: 0px;'><input type='checkbox' id='chk_all' onchange=\"(this.checked) ? check('all') : check('none');\"></th>";
 	}
 	echo th_order_by('destination', $text['label-destination'], $order_by, $order);
@@ -139,29 +139,29 @@
 	echo th_order_by('enabled', $text['label-enabled'], $order_by, $order);
 	echo th_order_by('description', $text['label-description'], $order_by, $order);
 	echo "<td class='list_control_icon'>\n";
-	if (permission_exists('sms_add')) {
-			echo "<a href='sms_edit.php' alt='".$text['button-add']."'>".$v_link_label_add."</a>";
+	if (permission_exists('sms_broadcast_add')) {
+			echo "<a href='sms_broadcast_edit.php' alt='".$text['button-add']."'>".$v_link_label_add."</a>";
 	}
-	if (permission_exists('sms_delete') && is_array($sms_destinations)) {
+	if (permission_exists('sms_broadcast_delete') && is_array($result)) {
 		echo "<a href='javascript:void(0);' onclick=\"if (confirm('".$text['confirm-delete']."')) { document.forms.frm.submit(); }\" alt='".$text['button-delete']."'>".$v_link_label_delete."</a>";
 	}
 	echo "</td>\n";
 	echo "</tr>\n";
 
-	if (is_array(result)) {
+	if (is_array($result)) {
 
 		foreach($result as $row) {
-			$tr_link = (permission_exists('sms_edit')) ? " href='sms_edit.php?id=".$row['sms_destination_uuid']."'" : null;
+			$tr_link = (permission_exists('sms_broadcast_edit')) ? " href='sms_broadcast_edit.php?id=".$row['sms_broadcast_uuid']."'" : null;
 			echo "<tr ".$tr_link.">\n";
-			if (permission_exists('sms_delete')) {
+			if (permission_exists('sms_broadcast_delete')) {
 				echo "	<td valign='top' class='".$row_style[$c]." tr_link_void' style='text-align: center; vertical-align: middle; padding: 0px;'>";
-				echo "		<input type='checkbox' name='id[]' id='checkbox_".$row['sms_destination_uuid']."' value='".$row['sms_destination_uuid']."' onclick=\"if (!this.checked) { document.getElementById('chk_all').checked = false; }\">";
+				echo "		<input type='checkbox' name='id[]' id='checkbox_".$row['sms_broadcast_uuid']."' value='".$row['sms_broadcast_uuid']."' onclick=\"if (!this.checked) { document.getElementById('chk_all').checked = false; }\">";
 				echo "	</td>";
-				$ext_ids[] = 'checkbox_'.$row['sms_destination_uuid'];
+				$ext_ids[] = 'checkbox_'.$row['sms_broadcast_uuid'];
 			}
 			echo "	<td valign='top' class='".$row_style[$c]."'>";
-			if (permission_exists('sms_edit')) {
-				echo "<a href='sms_edit.php?id=".$row['sms_destination_uuid']."'>".$row['destination']."</a>";
+			if (permission_exists('sms_broadcast_edit')) {
+				echo "<a href='sms_broadcast_edit.php?id=".$row['sms_broadcast_uuid']."'>".$row['destination']."</a>";
 			}
 			else {
 				echo $row['destination'];

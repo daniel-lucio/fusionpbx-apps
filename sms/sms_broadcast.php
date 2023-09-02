@@ -150,7 +150,7 @@
 
 	if (is_array($sms_destinations)) {
 
-		foreach($sms_destinations as $row) {
+		foreach($result as $row) {
 			$tr_link = (permission_exists('sms_edit')) ? " href='sms_edit.php?id=".$row['sms_destination_uuid']."'" : null;
 			echo "<tr ".$tr_link.">\n";
 			if (permission_exists('sms_delete')) {

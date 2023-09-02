@@ -52,6 +52,7 @@ else {
 			$sql = "delete from v_sms_broadcast ";
 			$sql .= "where domain_uuid = '".$_SESSION['domain_uuid']."' ";
 			$sql .= "and sms_destination_uuid = '$id' ";
+		echo $sql; exit;
 			$prep_statement = $db->prepare(check_sql($sql));
 			$prep_statement->execute();
 			unset($prep_statement, $sql);

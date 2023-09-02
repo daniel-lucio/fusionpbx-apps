@@ -41,7 +41,7 @@ foreach ($result as $sms_broadcast) {
 
 		print_r($number);
 
-		$switch_cmd = "api luarun app.lua sms outbound " . $number[0] . "@" . $domain_name . " " . $sms_from . " '" . $sms_body . "' " . $mailsent;
+		$switch_cmd = "api luarun app.lua sms outbound " . trim($number[0]) . "@" . $domain_name . " " . $sms_from . " '" . $sms_body . "' " . $mailsent;
 		if ($debug) {
 			echo $switch_cmd;
 			error_log(print_r($switch_cmd,true));

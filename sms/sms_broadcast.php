@@ -103,7 +103,7 @@
 //show the content
 	echo "<table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n";
 	echo "  <tr>\n";
-	echo "	<td align='left' width='100%'><b>".$text['header-sms']." (".$total_sms_destinations.")</b><br>\n";
+	echo "	<td align='left' width='100%'><b>".$text['header-call_broadcast']." (".$num_rows.")</b><br>\n";
 	echo "		".$text['description-sms']."\n";
 	echo "	</td>\n";
 	echo "		<form method='get' action=''>\n";
@@ -148,7 +148,7 @@
 	echo "</td>\n";
 	echo "</tr>\n";
 
-	if (is_array($sms_destinations)) {
+	if (is_array(result)) {
 
 		foreach($result as $row) {
 			$tr_link = (permission_exists('sms_edit')) ? " href='sms_edit.php?id=".$row['sms_destination_uuid']."'" : null;

@@ -1,3 +1,4 @@
+<?php
 //validate and format order by clause of select statement
         if (!function_exists('order_by')) {
                 function order_by($col, $dir, $col_default = '', $dir_default = 'asc') {

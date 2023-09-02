@@ -122,11 +122,13 @@ if (count($_POST) > 0 && strlen($_POST["persistformvar"]) == 0) {
 	}
 
 	//validate the token
-		$token = new token;
-		if (!$token->validate($_SERVER['PHP_SELF'])) {
-			message::add($text['message-invalid_token'],'negative');
-			header('Location: sms_broadcast.php');
-			exit;
+		if(class_exists('token')){
+			$token = new token;
+			if (!$token->validate($_SERVER['PHP_SELF'])) {
+				message::add($text['message-invalid_token'],'negative');
+				header('Location: sms_broadcast.php');
+				exit;
+			}
 		}
 
 	//check for all required data
@@ -232,8 +234,10 @@ if (count($_POST) > 0 && strlen($_POST["persistformvar"]) == 0) {
 	}
 
 //create token
-	$object = new token;
-	$token = $object->create($_SERVER['PHP_SELF']);
+	if(class_exists('token')){
+		$object = new token;
+		$token = $object->create($_SERVER['PHP_SELF']);
+	}
 
 //begin header
 	$document['title'] = $text['title-call_broadcast'];
@@ -329,7 +333,9 @@ if (count($_POST) > 0 && strlen($_POST["persistformvar"]) == 0) {
 	if ($action == "update") {
 		echo "<input type='hidden' name='sms_broadcast_uuid' value='".escape($sms_broadcast_uuid)."'>\n";
 	}
-	echo "<input type='hidden' name='".$token['name']."' value='".$token['hash']."'>\n";
+	if(class_exists('token')){
+		echo "<input type='hidden' name='".$token['name']."' value='".$token['hash']."'>\n";
+	}
 
 	echo "</form>";
 

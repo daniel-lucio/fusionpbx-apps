@@ -105,6 +105,7 @@
 	if (permission_exists('sms_broadcast_add')) {
 		echo button::create(['type'=>'button','label'=>$text['button-add'],'icon'=>$_SESSION['theme']['button_icon_add'],'id'=>'btn_add','link'=>'sms_broadcast_edit.php']);
 	}
+echo numeric_version();
 	if (numeric_version() > 40400){
 		if (permission_exists('sms_broadcast_add') && $result) {
 			echo button::create(['type'=>'button','label'=>$text['button-copy'],'icon'=>$_SESSION['theme']['button_icon_copy'],'name'=>'btn_copy','onclick'=>"modal_open('modal-copy','btn_copy');"]);

@@ -171,7 +171,7 @@
 				echo "<a href='sms_broadcast_edit.php?id=".$row['sms_broadcast_uuid']."' alt='".$text['button-edit']."'>$v_link_label_edit</a>";
 			}
 			if (permission_exists('sms_delete')) {
-				echo "<a href='sms_broadcast_delete.php?id[]=".$row['sms_broadcast_uuid']."' alt='".$text['button-delete']."' onclick=\"return confirm('".$text['confirm-delete']."')\">$v_link_label_delete</a>";
+				echo "<a href='sms_broadcast_delete.php?id=".$row['sms_broadcast_uuid']."' alt='".$text['button-delete']."' onclick=\"return confirm('".$text['confirm-delete']."')\">$v_link_label_delete</a>";
 			}
 			echo "</td>\n";
 			echo "</tr>\n";

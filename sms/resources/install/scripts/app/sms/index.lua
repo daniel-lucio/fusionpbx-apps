@@ -738,7 +738,15 @@
 					outbound_caller_id_number = "1" .. outbound_caller_id_number;
 				end
 				cmd ="curl \"" .. api_url .. "?password=" .. secret_key .. "&username=" .. username .. "&to=" .. to .. "&from=" .. outbound_caller_id_number .. "&coding=0&text=" .. body .. "\"";
-			end
+			elseif (carrier == "382") then
+				if to:len() < 11 then
+					to = "1" .. to;
+				end
+				if outbound_caller_id_number:len() < 11 then
+					outbound_caller_id_number = "1" .. outbound_caller_id_number;
+				end
+				cmd ="curl -X POST '" .. api_url .."' -d \"user=" .. username .. "&pass=" .. password .. "&source=" .. outbound_caller_id_number .. "&destination=" .. to .. "&message=" .. body .. "\"";                       
+                        end
 			if (debug["info"]) then
 				freeswitch.consoleLog("notice", "[sms] CMD: " .. cmd .. "\n");
 			end

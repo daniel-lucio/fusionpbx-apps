@@ -651,6 +651,11 @@
 					username = settings['sms'][carrier..'_username']['text']
 				end
 			end
+			if (settings['sms'][carrier..'_password'] ~= nil) then
+				if (settings['sms'][carrier..'_password']['text'] ~= nil) then
+					password = settings['sms'][carrier..'_password']['text']
+				end
+			end
 			if (settings['sms'][carrier..'_delivery_status_webhook_url'] ~= nil) then
 				if (settings['sms'][carrier..'_delivery_status_webhook_url']['text'] ~= nil) then
 					delivery_status_webhook_url = settings['sms'][carrier..'_delivery_status_webhook_url']['text']
@@ -662,6 +667,7 @@
 			if (secret_key ~= nil) then freeswitch.consoleLog("notice", "[sms] secret_key: " .. secret_key .. "\n") end;
 			if (api_url ~= nil) then freeswitch.consoleLog("notice", "[sms] api_url: " .. api_url .. "\n") end;
 			if (username ~= nil) then freeswitch.consoleLog("notice", "[sms] username: " .. username .. "\n") end;
+			if (password ~= nil) then freeswitch.consoleLog("notice", "[sms] password: " .. password .. "\n") end;
 			if (delivery_status_webhook_url ~= nil) then freeswitch.consoleLog("notice", "[sms] delivery_status_webhook_url: " .. delivery_status_webhook_url .. "\n") end;
 			if (outbound_delivery_method ~= nil) then  freeswitch.consoleLog("notice", "[sms] outbound_delivery_method: " .. outbound_delivery_method .. "\n") end;
 		end

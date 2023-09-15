@@ -115,6 +115,7 @@
 
 
 //      $result = $database->select($sql, $parameters, 'all');
+	$result = $database->result;
 	unset($sql, $parameters);
 
 //create token

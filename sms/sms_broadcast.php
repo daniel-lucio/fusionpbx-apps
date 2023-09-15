@@ -103,7 +103,7 @@
 //show the content
 	echo "<table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n";
 	echo "  <tr>\n";
-	echo "	<td align='left' width='100%'><b>".$text['title-call_broadcast']." (".$num_rows.")</b><br>\n";
+	echo "	<td align='left' width='100%'><b>".$text['title-call_broadcast']."</b><br>\n";
 	echo "		".$text['description-sms']."\n";
 	echo "	</td>\n";
 	echo "		<form method='get' action=''>\n";

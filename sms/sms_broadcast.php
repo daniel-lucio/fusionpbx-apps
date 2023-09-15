@@ -69,7 +69,22 @@
 	}
 	$database = new database;
 	$parameters['domain_uuid'] = $_SESSION['domain_uuid'];
-	$num_rows = $database->select($sql, $parameters, 'column');
+	if (numeric_version() < 40500){
+                if (method_exists($database, 'prepare')){
+                        $prep2 = $database->prepare($sql);
+                        $database->result = $prep2->execute($parameters);
+                }
+                else{
+                        $database->select($sql, $parameters);
+                }
+        }
+        else{
+                $database->result = $database->select($sql, $parameters, 'column');
+        }
+
+//      $num_rows = $database->select($sql, $parameters, 'column');
+        $num_rows = $database->result[0]['count(*)'];
+
 
 //prepare the paging
 	$rows_per_page = ($_SESSION['domain']['paging']['numeric'] != '') ? $_SESSION['domain']['paging']['numeric'] : 50;
@@ -85,7 +100,21 @@
 	$sql .= order_by($order_by, $order);
 	$sql .= limit_offset($rows_per_page, $offset);
 	$database = new database;
-	$result = $database->select($sql, $parameters, 'all');
+        if (numeric_version() < 40500){
+                if (method_exists($database, 'prepare')){
+                        $prep2 = $database->prepare($sql);
+                        $database->result = $prep2->execute($parameters);
+                }
+                else{
+                        $database->select($sql, $parameters);
+                }
+        }
+        else{
+                $database->result = $database->select($sql, $parameters, 'column');
+        }
+
+
+//      $result = $database->select($sql, $parameters, 'all');
 	unset($sql, $parameters);
 
 //create token
@@ -103,7 +132,7 @@
 //show the content
 	echo "<table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n";
 	echo "  <tr>\n";
-	echo "	<td align='left' width='100%'><b>".$text['title-call_broadcast']."</b><br>\n";
+	echo "  <div class='heading'><b>".$text['title-call_broadcast']." (".$num_rows.")</b></div>\n";
 	echo "		".$text['description-sms']."\n";
 	echo "	</td>\n";
 	echo "		<form method='get' action=''>\n";

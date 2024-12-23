@@ -210,6 +210,17 @@ function route_and_send_sms($from, $to, $body, $media = "") {
 							error_log('Ring group'.PHP_EOL);
 							error_log(print_r($switch_cmd,true).PHP_EOL);
 						}
+						if (strlen($_SESSION['sms']['incoming_script']['text'])){
+							$script_cmd = $_SESSION['sms']['incoming_script']['text'];
+							$script_cmd = str_replace('${caller_id_number}', $from, $script_cmd);
+							$script_cmd = str_replace('${destination_number}', $to, $script_cmd);
+							$script_cmd = str_replace('\\', "", $script_cmd);
+							if ($debug) {
+								error_log(print_r($switch_cmd,true));
+							}
+							error_log(print_r($script_cmd,true));
+							exec($script_cmd);
+						}
 						$result2 = trim(event_socket_request($fp, $switch_cmd));
 						if ($debug) {
 							error_log("RESULT: " . print_r($result2,true).PHP_EOL);
@@ -220,6 +231,17 @@ function route_and_send_sms($from, $to, $body, $media = "") {
 					if ($debug) {
 						error_log('Single extension'.PHP_EOL);
 						error_log(print_r($switch_cmd,true));
+					}
+					if (strlen($_SESSION['sms']['incoming_script']['text'])){
+						$script_cmd = $_SESSION['sms']['incoming_script']['text'];
+						$script_cmd = str_replace('${caller_id_number}', $from, $script_cmd);
+						$script_cmd = str_replace('${destination_number}', $to, $script_cmd);
+						$script_cmd = str_replace('\\', "", $script_cmd);
+						if ($debug) {
+							error_log(print_r($switch_cmd,true));
+						}
+						error_log(print_r($script_cmd,true));
+						exec($script_cmd);
 					}
 					$result2 = trim(event_socket_request($fp, $switch_cmd));
 					if ($debug) {
